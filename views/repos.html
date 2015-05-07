@@ -1,0 +1,16 @@
+<div class="container">
+    <div class="row">
+        <h1>{{title}}</h1>
+        <p>Welcome to {{title}}</p>
+
+        <ul class="repos">
+        {{#each repos}}
+            <li>
+                <a href="/repo/{{ full_name }}">
+                    {{ full_name }}
+                </a>
+            </li>
+        {{/each}}
+        </ul>
+    </div>
+</div>
