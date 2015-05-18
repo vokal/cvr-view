@@ -1,0 +1,45 @@
+<div class="container">
+    <div class="row">
+        <h1>{{repo.name}} #{{hash}}</h1>
+
+        <table class="files">
+            <colgroup>
+                <col>
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+            </colgroup>
+
+            <thead>
+                <tr>
+                    <th>File</th>
+                    <th>Lines</th>
+                    <th>Functions</th>
+                    <th>Branches</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {{#each cov}}
+                <tr>
+                    <td>
+                        <a href="/repo/{{ ../repo.owner }}/{{ ../repo.name }}/{{ file }}">
+                            {{ file }}
+                        </a>
+                    </td>
+                    <td>
+                        {{ lines.hit }} / {{ lines.found }}
+                    </td>
+                    <td>
+                        {{ functions.hit }} / {{ functions.found }}
+                    </td>
+                    <td>
+                        {{ branches.hit }} / {{ branches.found }}
+                    </td>
+                </tr>
+            {{/each}}
+            </tbody>
+        </table>
+
+    </div>
+</div>

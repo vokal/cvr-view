@@ -1,0 +1,12 @@
+<div class="container">
+    <div class="row">
+        <h1>{{repo.name}} #{{hash}}</h1>
+
+        <pre data-line="{{ linesCovered }}"
+            data-line-missing="{{ linesMissing }}"><code class="language-{{ extension }}">{{ source }}</code></pre>
+
+        <script src="/scripts/prism.js"></script>
+        <script src="/scripts/prism-custom.js"></script>
+
+    </div>
+</div>
