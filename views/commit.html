@@ -1,6 +1,8 @@
 <div class="container">
     <div class="row">
-        <h1>{{repo.name}} #{{hash}}</h1>
+        <h1>{{ repo.owner }}/{{ repo.name }}</h1>
+
+        <h2>#{{ hash }}</h2>
 
         <table class="files">
             <colgroup>
@@ -23,7 +25,7 @@
             {{#each cov}}
                 <tr>
                     <td>
-                        <a href="/repo/{{ ../repo.owner }}/{{ ../repo.name }}/{{ file }}">
+                        <a href="/repo/{{ ../repo.owner }}/{{ ../repo.name }}/{{ ../hash }}/{{ file }}">
                             {{ file }}
                         </a>
                     </td>
