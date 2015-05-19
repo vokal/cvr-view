@@ -2,7 +2,19 @@ var express = require( "express" );
 var router = express.Router();
 var cvr = require( "cvr" );
 var passport = require( "passport" );
-var auth = require( "../lib/auth" )
+var mongoose = require( "mongoose" );
+
+var auth = require( "../lib/auth" );
+var models = require( "../lib/models" );
+
+var dbPass = process.env.DB_PASS || require( "../local-settings.json" ).dbPass;
+mongoose.connect( "mongodb://cvr:" + dbPass + "@ds031872.mongolab.com:31872/cvr" );
+
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function (callback) {
+  // yay!
+});
 
 router.get( "/", function( req, res, next )
 {
@@ -13,24 +25,57 @@ router.get( "/repos",
     auth.ensureAuthenticated,
     function( req, res, next )
     {
-        var onRepos = function ( err, repos )
+        var username = req.session.user.profile.username;
+
+        var onUser = function ( err, user )
         {
-            //TODO: cache in DB
-            req.session.repos = repos;
-            res.render( "repos", {
-                layout: "layout.html",
-                title: "Repos",
-                repos: repos } );
+            if( err )
+            {
+                return res.status( 500 ).end();
+            }
+
+            if( !user )
+            {
+                user = new models.User({ oauth: {
+                    provider: "github",
+                    username: username
+                }});
+            }
+
+            var onRepos = function ( err, repos )
+            {
+                user.repos = repos;
+                user.save();
+
+                res.render( "repos", {
+                    layout: "layout.html",
+                    title: "Repos",
+                    repos: user.repos } );
+            };
+
+            if( user.repos.length )
+            {
+                onRepos( null, user.repos );
+            }
+            else
+            {
+                cvr.getGitHubRepos( req.session.user.token, function ( err, repos )
+                {
+                    repos = repos.map( function ( r )
+                    {
+                        return {
+                            owner: r.owner.login,
+                            name: r.name,
+                            fullName: r.full_name
+                        };
+                    } );
+
+                    onRepos( null, repos );
+                } );
+            }
         };
 
-        if( req.session.repos )
-        {
-            onRepos( null, req.session.repos );
-        }
-        else
-        {
-            cvr.getGitHubRepos( req.session.user.token, onRepos );
-        }
+        var user = models.User.findOne({ "oauth.username": username }, onUser );
     } );
 
 router.get( "/repo/:owner/:name",
@@ -133,11 +178,9 @@ router.post( "/coverage", function( req, res, next )
         var result = saveCoverage( req.body.token, req.body.commit, req.body.coverage );
         if( !result )
         {
-            res.status( 201 ).end();
-            return;
+            return res.status( 201 ).end();
         }
-        res.status( 404 ).send( result.message ).end();
-        return;
+        return res.status( 404 ).send( result.message ).end();
     }
 
     res.status( 400 ).end();
@@ -172,6 +215,7 @@ var saveCoverage = function ( token, commit, coverage )
         } );
     }
 };
+
 
 
 var repos = [
