@@ -20,6 +20,7 @@
     "passport": "^0.2.1",
     "passport-github": "^0.1.5",
     "passport-oauth": "^1.0.0",
-    "serve-favicon": "~2.2.0"
+    "serve-favicon": "~2.2.0",
+    "uuid-lib": "0.0.6"
   }
 }

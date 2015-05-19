@@ -3,6 +3,7 @@ var router = express.Router();
 var cvr = require( "cvr" );
 var passport = require( "passport" );
 var mongoose = require( "mongoose" );
+var uuid = require( "uuid-lib" );
 
 var auth = require( "../lib/auth" );
 var models = require( "../lib/models" );
@@ -45,12 +46,18 @@ router.get( "/repos",
             var onRepos = function ( err, repos )
             {
                 user.repos = repos;
-                user.save();
+                user.save( function ( err )
+                {
+                    if( err )
+                    {
+                        return res.status( 500 ).end();
+                    }
 
-                res.render( "repos", {
-                    layout: "layout.html",
-                    title: "Repos",
-                    repos: user.repos } );
+                    res.render( "repos", {
+                        layout: "layout.html",
+                        title: "Repos",
+                        repos: user.repos } );
+                });
             };
 
             if( user.repos.length )
@@ -102,22 +109,48 @@ router.get( "/repo/:owner/:name",
         }
 */
 
-
-        //TODO: DB
-        var repo = repos[ 0 ];
-        var commit = repo.commits[ repo.commits.length - 1 ];
-        var coverage = commit.coverage;
-
-        var onCov = function ( err, cov )
+        var onRepo = function ( err, repo )
         {
-            res.render( "commit", {
-                layout: "layout.html",
-                repo: repo,
-                cov: cov,
-                hash: commit.hash } );
+            if( err )
+            {
+                return res.status( 500 ).end();
+            }
+
+            if( !repo )
+            {
+                repo = new models.Repo({
+                    provider: "github",
+                    owner: req.params.owner,
+                    name: req.params.name,
+                    fullName: req.params.owner + "/" + req.params.name,
+                    token: uuid.raw()
+                });
+                repo.save();
+            }
+
+            if( repo.commits.length === 0 )
+            {
+                return res.render( "commit-activate", {
+                    layout: "layout.html",
+                    repo: repo } );
+            }
+
+            var commit = repo.commits[ repo.commits.length - 1 ];
+            var coverage = commit.coverage;
+
+            var onCov = function ( err, cov )
+            {
+                res.render( "commit", {
+                    layout: "layout.html",
+                    repo: repo,
+                    cov: cov,
+                    hash: commit.hash } );
+            };
+
+            cvr.getCoverage( coverage, "lcov", onCov );
         };
 
-        cvr.getCoverage( coverage, "lcov", onCov );
+        models.Repo.findOne( { owner: req.params.owner, name: req.params.name }, onRepo );
 
     } );
 
@@ -175,45 +208,57 @@ router.post( "/coverage", function( req, res, next )
 {
     if( req.body.token && req.body.commit && req.body.coverage )
     {
-        var result = saveCoverage( req.body.token, req.body.commit, req.body.coverage );
-        if( !result )
+        var onCoverageSaved = function ( err )
         {
+            if( err )
+            {
+                return res.status( 404 ).send( err.message ).end();
+            }
+
             return res.status( 201 ).end();
-        }
-        return res.status( 404 ).send( result.message ).end();
+        };
+
+        saveCoverage( req.body.token, req.body.commit, req.body.coverage, onCoverageSaved );
     }
 
     res.status( 400 ).end();
 } );
 
-var saveCoverage = function ( token, commit, coverage )
+var saveCoverage = function ( token, hash, coverage, callback )
 {
-    var repo = repos.filter( function ( r )
+    var onRepo = function ( err, repo )
     {
-        return r.token === token;
-    } );
+        if( err )
+        {
+            return callback( err );
+        }
 
-    if( !repo.length )
-    {
-        return new Error( "Token is not registered" );
-    }
+        if( !repo )
+        {
+            return callback( new Error( "Token is not registered" ) );
+        }
 
-    var commit = repo[ 0 ].commits.filter( function ( c )
-    {
-        return c.hash == commit;
-    } );
-
-    if( commit.length )
-    {
-        commit[ 0 ].coverage = coverage;
-    }
-    else
-    {
-        repos[ 0 ].commits.push( {
-            hash: commit,
-            coverage: coverage
+        var commit = repo.commits.filter( function ( c )
+        {
+            return c.hash == hash;
         } );
-    }
+
+        if( commit.length )
+        {
+            commit[ 0 ].coverage = coverage;
+        }
+        else
+        {
+            repo.commits.push( {
+                hash: hash,
+                coverage: coverage
+            } );
+        }
+
+        repo.save( callback );
+    };
+
+    models.Repo.findOne( { token: token }, onRepo );
 };
 
 
