@@ -4,6 +4,10 @@
 
         <h2>#{{ hash }}</h2>
 
+        <p>
+            To post coverage <code>curl --data "token={{ repo.token }}&commit=:commit_hash&coverage=:lcov_coverage" https://cvr.vokal.io/coverage</code>
+        </p>
+
         <table class="files">
             <colgroup>
                 <col>
