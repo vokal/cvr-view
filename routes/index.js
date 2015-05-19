@@ -180,7 +180,7 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
                      } );
                 };
 
-                cvr.getBlob( req.session.user.token, req.params.owner, req.params.name,
+                cvr.getGitHubFile( req.session.user.token, req.params.owner, req.params.name,
                     req.params.hash, req.params.file, onFileContent );
             };
 
