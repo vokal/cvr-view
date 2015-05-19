@@ -58,3 +58,4 @@ $RECYCLE.BIN/
 *.lnk
 
 local-settings.json
+tmp

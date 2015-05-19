@@ -15,10 +15,12 @@
     "express-session": "^1.11.1",
     "hbs": "~2.9.0",
     "less-middleware": "1.0.x",
+    "mongoose": "^4.0.3",
     "morgan": "~1.5.1",
     "passport": "^0.2.1",
     "passport-github": "^0.1.5",
     "passport-oauth": "^1.0.0",
-    "serve-favicon": "~2.2.0"
+    "serve-favicon": "~2.2.0",
+    "uuid-lib": "0.0.6"
   }
 }

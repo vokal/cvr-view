@@ -1,0 +1,51 @@
+<div class="container">
+    <div class="row">
+        <h1>{{ repo.owner }}/{{ repo.name }}</h1>
+
+        <h2>#{{ hash }}</h2>
+
+        <p>
+            To post coverage <code>curl --data "token={{ repo.token }}&commit=:commit_hash&coverage=:lcov_coverage" https://cvr.vokal.io/coverage</code>
+        </p>
+
+        <table class="files">
+            <colgroup>
+                <col>
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+                <col style="width: 10%;">
+            </colgroup>
+
+            <thead>
+                <tr>
+                    <th>File</th>
+                    <th>Lines</th>
+                    <th>Functions</th>
+                    <th>Branches</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {{#each cov}}
+                <tr>
+                    <td>
+                        <a href="/repo/{{ ../repo.owner }}/{{ ../repo.name }}/{{ ../hash }}/{{ file }}">
+                            {{ file }}
+                        </a>
+                    </td>
+                    <td>
+                        {{ lines.hit }} / {{ lines.found }}
+                    </td>
+                    <td>
+                        {{ functions.hit }} / {{ functions.found }}
+                    </td>
+                    <td>
+                        {{ branches.hit }} / {{ branches.found }}
+                    </td>
+                </tr>
+            {{/each}}
+            </tbody>
+        </table>
+
+    </div>
+</div>

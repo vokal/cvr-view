@@ -1,3 +1,6 @@
+@import (inline) "prism.css";
+@import "prism-custom.less";
+
 body {
     padding-top: 70px;
 }
@@ -19,5 +22,22 @@ body {
         &:hover {
             background: #EEE;
         }
+    }
+}
+
+table {
+    display: inline-table;
+    width: 100%;
+
+    td,
+    th {
+        padding: 5px 10px;
+        background: #F2F2F2;
+        border-bottom: 2px solid #FFF;
+    }
+
+    th {
+        background: #666;
+        color: #FFF;
     }
 }

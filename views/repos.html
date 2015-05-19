@@ -1,13 +1,33 @@
 <div class="container">
     <div class="row">
         <h1>{{title}}</h1>
-        <p>Welcome to {{title}}</p>
+
+        <table class="repos">
+        {{#each activeRepos}}
+            <tr>
+                <td>
+                    <a href="/repo/{{ fullName }}">
+                        {{ fullName }}
+                    </a>
+                </td>
+                <td>
+                    {{#if linePercent}}
+                        {{ linePercent }}%
+                    {{else}}
+                        New
+                    {{/if}}
+                </td>
+            </tr>
+        {{/each}}
+        </table>
+
+        <br><br>
 
         <ul class="repos">
         {{#each repos}}
             <li>
-                <a href="/repo/{{ full_name }}">
-                    {{ full_name }}
+                <a href="/repo/{{ fullName }}">
+                    {{ fullName }}
                 </a>
             </li>
         {{/each}}

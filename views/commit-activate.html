@@ -1,0 +1,18 @@
+<div class="container">
+    <div class="row">
+        <h1>{{ repo.name }}</h1>
+
+        <p>
+            No coverage has been posted for this repo yet.
+        </p>
+
+        <p>
+            Token: <strong>{{ repo.token }}</strong>
+        </p>
+
+        <p>
+            To post coverage <code>curl --data "token={{ repo.token }}&commit=:commit_hash&coverage=:lcov_coverage" https://cvr.vokal.io/coverage</code>
+        </p>
+
+    </div>
+</div>
