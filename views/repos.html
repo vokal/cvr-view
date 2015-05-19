@@ -2,6 +2,23 @@
     <div class="row">
         <h1>{{title}}</h1>
 
+        <table class="repos">
+        {{#each activeRepos}}
+            <tr>
+                <td>
+                    <a href="/repo/{{ fullName }}">
+                        {{ fullName }}
+                    </a>
+                </td>
+                <td>
+                    {{ linePercent }}%
+                </td>
+            </tr>
+        {{/each}}
+        </table>
+
+        <br><br>
+
         <ul class="repos">
         {{#each repos}}
             <li>

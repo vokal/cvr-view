@@ -17,6 +17,15 @@ db.once('open', function (callback) {
   // yay!
 });
 
+var error = function ( res, err )
+{
+    res.render( "error", {
+        message: err ? err.message : "Server Error",
+        error: err,
+        layout: "layout.html"
+    });
+};
+
 router.get( "/", function( req, res, next )
 {
     res.render("index", { layout: "layout.html", title: "Express" });
@@ -28,11 +37,78 @@ router.get( "/repos",
     {
         var username = req.session.user.profile.username;
 
+
+        var onActiveRepos = function ( err, user, active )
+        {
+            if( err )
+            {
+                return error( res, err );
+            }
+
+            res.render( "repos", {
+                layout: "layout.html",
+                title: "Repos",
+                repos: user.repos,
+                activeRepos: user.activeRepos } );
+        };
+
+        var onUserRepos = function ( err, user )
+        {
+            user.save( function ( err )
+            {
+                if( err )
+                {
+                    return error( res, err );
+                }
+
+                var repoFullNames = user.repos.map( function ( r )
+                {
+                    return r.fullName;
+                } );
+
+                models.Repo.find( { fullName: { $in: repoFullNames } }, function ( err, activeRepos )
+                {
+                    if( err )
+                    {
+                        return error( res, err );
+                    }
+
+                    user.activeRepos = [];
+
+                    user.repos.forEach( function ( userRepo )
+                    {
+                        var activeRepo = activeRepos.filter( function ( activeRepo )
+                        {
+                            return activeRepo.fullName === userRepo.fullName;
+                        } );
+
+                        if( activeRepo.length )
+                        {
+                            if( activeRepo[ 0 ].commits )
+                            {
+                                var lastCoverage = activeRepo[ 0 ].commits[ activeRepo[ 0 ].commits.length - 1 ];
+                                userRepo.linePercent = lastCoverage.linePercent.toFixed( 0 );
+                            }
+
+                            user.activeRepos.push( userRepo );
+                        }
+                    } );
+
+                    user.repos = user.repos.filter( function ( userRepo )
+                    {
+                        return !userRepo.isActive;
+                    } );
+
+                    onActiveRepos( null, user );
+                } );
+            });
+        };
+
         var onUser = function ( err, user )
         {
             if( err )
             {
-                return res.status( 500 ).end();
+                return error( res, err );
             }
 
             if( !user )
@@ -43,32 +119,20 @@ router.get( "/repos",
                 }});
             }
 
-            var onRepos = function ( err, repos )
-            {
-                user.repos = repos;
-                user.save( function ( err )
-                {
-                    if( err )
-                    {
-                        return res.status( 500 ).end();
-                    }
-
-                    res.render( "repos", {
-                        layout: "layout.html",
-                        title: "Repos",
-                        repos: user.repos } );
-                });
-            };
-
             if( user.repos.length )
             {
-                onRepos( null, user.repos );
+                onUserRepos( null, user );
             }
             else
             {
                 cvr.getGitHubRepos( req.session.user.token, function ( err, repos )
                 {
-                    repos = repos.map( function ( r )
+                    if( err )
+                    {
+                        return error( res, err );
+                    }
+
+                    user.repos = repos.map( function ( r )
                     {
                         return {
                             owner: r.owner.login,
@@ -77,12 +141,12 @@ router.get( "/repos",
                         };
                     } );
 
-                    onRepos( null, repos );
+                    onUserRepos( null, user );
                 } );
             }
         };
 
-        var user = models.User.findOne({ "oauth.username": username }, onUser );
+        models.User.findOne( { "oauth.username": username }, onUser );
     } );
 
 router.get( "/repo/:owner/:name",
@@ -93,7 +157,7 @@ router.get( "/repo/:owner/:name",
         {
             if( err )
             {
-                return res.status( 500 ).end();
+                return error( res, err );
             }
 
             if( !repo )
@@ -142,7 +206,7 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
         {
             if( err )
             {
-                return res.status( 500 ).end();
+                return error( res, err );
             }
 
             var commit = repo.commits.filter( function ( c )
@@ -163,8 +227,7 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
                 {
                     if( err )
                     {
-                        console.log( err );
-                        return res.status( 500 ).end();
+                        return error( res, err );
                     }
 
                     res.render( "coverage", {
@@ -229,19 +292,26 @@ var saveCoverage = function ( token, hash, coverage, callback )
             return c.hash == hash;
         } );
 
-        if( commit.length )
+        cvr.getCoverage( coverage, "lcov", function ( err, cov )
         {
-            commit[ 0 ].coverage = coverage;
-        }
-        else
-        {
-            repo.commits.push( {
-                hash: hash,
-                coverage: coverage
-            } );
-        }
+            var linePercent = cvr.getLineCoveragePercent( cov );
 
-        repo.save( callback );
+            if( commit.length )
+            {
+                commit[ 0 ].coverage = coverage;
+                commit[ 0 ].linePercent = linePercent
+            }
+            else
+            {
+                repo.commits.push( {
+                    hash: hash,
+                    coverage: coverage,
+                    linePercent: linePercent
+                } );
+            }
+
+            repo.save( callback );
+        } );
     };
 
     models.Repo.findOne( { token: token }, onRepo );
