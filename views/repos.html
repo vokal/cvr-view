@@ -11,7 +11,11 @@
                     </a>
                 </td>
                 <td>
-                    {{ linePercent }}%
+                    {{#if linePercent}}
+                        {{ linePercent }}%
+                    {{else}}
+                        New
+                    {{/if}}
                 </td>
             </tr>
         {{/each}}

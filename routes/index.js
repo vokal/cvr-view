@@ -8,8 +8,8 @@ var uuid = require( "uuid-lib" );
 var auth = require( "../lib/auth" );
 var models = require( "../lib/models" );
 
-var dbPass = process.env.DB_PASS || require( "../local-settings.json" ).dbPass;
-mongoose.connect( "mongodb://cvr:" + dbPass + "@ds031872.mongolab.com:31872/cvr" );
+var dbConn = process.env.DB_CONN || require( "../local-settings.json" ).dbConn;
+mongoose.connect( dbConn );
 
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -66,7 +66,7 @@ router.get( "/repos",
                     return r.fullName;
                 } );
 
-                models.Repo.find( { fullName: { $in: repoFullNames } }, function ( err, activeRepos )
+                models.Repo.findFullNameInArray( repoFullNames, function ( err, activeRepos )
                 {
                     if( err )
                     {
@@ -84,7 +84,7 @@ router.get( "/repos",
 
                         if( activeRepo.length )
                         {
-                            if( activeRepo[ 0 ].commits )
+                            if( activeRepo[ 0 ].commits && activeRepo[ 0 ].commits.length )
                             {
                                 var lastCoverage = activeRepo[ 0 ].commits[ activeRepo[ 0 ].commits.length - 1 ];
                                 userRepo.linePercent = lastCoverage.linePercent.toFixed( 0 );
@@ -194,8 +194,7 @@ router.get( "/repo/:owner/:name",
             cvr.getCoverage( coverage, "lcov", onCov );
         };
 
-        models.Repo.findOne( { owner: req.params.owner, name: req.params.name }, onRepo );
-
+        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
     } );
 
 router.get( "/repo/:owner/:name/:hash/:file(*)",
@@ -250,7 +249,7 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
             cvr.getCoverage( commit[ 0 ].coverage, "lcov", onCov );
         };
 
-        models.Repo.findOne( { owner: req.params.owner, name: req.params.name }, onRepo );
+        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
     } );
 
 router.post( "/coverage", function( req, res, next )
