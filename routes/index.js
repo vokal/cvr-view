@@ -61,6 +61,11 @@ router.get( "/repos",
                     return error( res, err );
                 }
 
+                if( req.query.refresh )
+                {
+                    return res.redirect( "/repos" );
+                }
+
                 var repoFullNames = user.repos.map( function ( r )
                 {
                     return r.fullName;
@@ -119,7 +124,7 @@ router.get( "/repos",
                 }});
             }
 
-            if( user.repos.length )
+            if( user.repos.length && !req.query.refresh )
             {
                 onUserRepos( null, user );
             }
@@ -218,6 +223,14 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
                 return res.status( 404 ).end();
             }
 
+            var shiftLineIndex = function ( lines )
+            {
+                return lines.map( function ( l )
+                {
+                    return l - 1;
+                } );
+            };
+
             var onCov = function ( err, cov )
             {
                 var fileCov = cvr.getFileCoverage( cov, req.params.file );
@@ -236,8 +249,8 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
                         hash: req.params.hash,
                         fileName: req.params.file,
                         extension: cvr.getFileType( req.params.file ),
-                        linesCovered: cvr.linesCovered( fileCov ).join( "," ),
-                        linesMissing: cvr.linesMissing( fileCov ).join( "," ),
+                        linesCovered: shiftLineIndex( cvr.linesCovered( fileCov ) ).join( "," ),
+                        linesMissing: shiftLineIndex( cvr.linesMissing( fileCov ) ).join( "," ),
                         source: content
                      } );
                 };
