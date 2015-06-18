@@ -1,0 +1,24 @@
+image: docker.vokal.io/python:2.7
+script:
+    - apt-get update -qq && apt-get -y install wget sudo
+publish:
+    docker:
+        docker_host: tcp://docker-build.vokal.io:2375
+        docker_version: 1.4.1
+        registry_login_url: https://docker.vokal.io/v1/
+        registry_login: true
+        username: $$dockerUsername
+        password: $$dockerPassword
+        email: scott.ferguson@vokal.io
+        image_name: docker.vokal.io/vokal-wall-ios
+        tags: [latest]
+# deploy:
+#     bash:
+#         script:
+#             - fab environment update
+notify:
+    webhook:
+        urls:
+            - https://dronebot.vokalinteractive.com/hook
+        on_success: true
+        on_failure: true
