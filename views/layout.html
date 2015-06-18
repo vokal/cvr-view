@@ -25,7 +25,13 @@
             <li><a href="/">About</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="/auth/github">GitHub Log In</a></li>
+            <li>
+              {{#if authed}}
+                <a>Logged In</a>
+              {{else}}
+                <a href="/auth/github">GitHub Log In</a>
+              {{/if}}
+            </li>
           </ul>
         </div>
       </div>

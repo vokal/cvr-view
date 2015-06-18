@@ -1,6 +1,8 @@
 <div class="container">
     <div class="row">
         <h1>CVR</h1>
-        <p>Code Coverage</p>
+        <p>View line-by-line coverage reports by posting code coverage in LCOV or Cobertura.</p>
+        {{#if authed}}{{else}}<p>First, <a href="/auth/github">use your GitHub account to log in</a>.</p>{{/if}}
+        <p><a href="/repos">Browse repos</a> to view coverage or get a token to post coverage.</p>
     </div>
 </div>
