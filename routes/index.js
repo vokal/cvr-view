@@ -1,7 +1,8 @@
+"use strict";
+
 var express = require( "express" );
 var router = express.Router();
 var cvr = require( "cvr" );
-var passport = require( "passport" );
 var mongoose = require( "mongoose" );
 var uuid = require( "uuid-lib" );
 
@@ -17,18 +18,22 @@ db.once('open', function (callback) {
   // yay!
 });
 
-var error = function ( res, err )
+var error = function ( req, res, err )
 {
     res.render( "error", {
         message: err ? err.message : "Server Error",
         error: err,
-        layout: "layout.html"
+        layout: "layout.html",
+        authed: req.isAuthenticated()
     });
 };
 
 router.get( "/", function( req, res, next )
 {
-    res.render("index", { layout: "layout.html", title: "Express" });
+    res.render("index", {
+        layout: "layout.html",
+        title: "Express",
+        authed: req.isAuthenticated() });
 } );
 
 router.get( "/repos",
@@ -42,14 +47,15 @@ router.get( "/repos",
         {
             if( err )
             {
-                return error( res, err );
+                return error( req, res, err );
             }
 
             res.render( "repos", {
                 layout: "layout.html",
                 title: "Repos",
                 repos: user.repos,
-                activeRepos: user.activeRepos } );
+                activeRepos: user.activeRepos,
+                authed: true } );
         };
 
         var onUserRepos = function ( err, user )
@@ -58,7 +64,7 @@ router.get( "/repos",
             {
                 if( err )
                 {
-                    return error( res, err );
+                    return error( req, res, err );
                 }
 
                 if( req.query.refresh )
@@ -75,7 +81,7 @@ router.get( "/repos",
                 {
                     if( err )
                     {
-                        return error( res, err );
+                        return error( req, res, err );
                     }
 
                     user.activeRepos = [];
@@ -113,7 +119,7 @@ router.get( "/repos",
         {
             if( err )
             {
-                return error( res, err );
+                return error( req, res, err );
             }
 
             if( !user )
@@ -134,7 +140,7 @@ router.get( "/repos",
                 {
                     if( err )
                     {
-                        return error( res, err );
+                        return error( req, res, err );
                     }
 
                     user.repos = repos.map( function ( r )
@@ -162,7 +168,7 @@ router.get( "/repo/:owner/:name",
         {
             if( err )
             {
-                return error( res, err );
+                return error( req, res, err );
             }
 
             if( !repo )
@@ -181,7 +187,8 @@ router.get( "/repo/:owner/:name",
             {
                 return res.render( "commit-activate", {
                     layout: "layout.html",
-                    repo: repo } );
+                    repo: repo,
+                    authed: true } );
             }
 
             var commit = repo.commits[ repo.commits.length - 1 ];
@@ -193,7 +200,8 @@ router.get( "/repo/:owner/:name",
                     layout: "layout.html",
                     repo: repo,
                     cov: cov,
-                    hash: commit.hash } );
+                    hash: commit.hash,
+                    authed: true } );
             };
 
             cvr.getCoverage( coverage, "lcov", onCov );
@@ -210,7 +218,7 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
         {
             if( err )
             {
-                return error( res, err );
+                return error( req, res, err );
             }
 
             var commit = repo.commits.filter( function ( c )
@@ -239,7 +247,7 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
                 {
                     if( err )
                     {
-                        return error( res, err );
+                        return error( req, res, err );
                     }
 
                     res.render( "coverage", {
@@ -251,7 +259,8 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
                         extension: cvr.getFileType( req.params.file ),
                         linesCovered: shiftLineIndex( cvr.linesCovered( fileCov ) ).join( "," ),
                         linesMissing: shiftLineIndex( cvr.linesMissing( fileCov ) ).join( "," ),
-                        source: content
+                        source: content,
+                        authed: true
                      } );
                 };
 
@@ -279,13 +288,14 @@ router.post( "/coverage", function( req, res, next )
             return res.status( 201 ).end();
         };
 
-        return saveCoverage( req.body.token, req.body.commit, req.body.coverage, onCoverageSaved );
+        return saveCoverage( req.body.token, req.body.commit,
+            req.body.coverage, req.body.coveragetype || "lcov", onCoverageSaved );
     }
 
     res.status( 400 ).end();
 } );
 
-var saveCoverage = function ( token, hash, coverage, callback )
+var saveCoverage = function ( token, hash, coverage, coverageType, callback )
 {
     var onRepo = function ( err, repo )
     {
@@ -304,7 +314,7 @@ var saveCoverage = function ( token, hash, coverage, callback )
             return c.hash == hash;
         } );
 
-        cvr.getCoverage( coverage, "lcov", function ( err, cov )
+        cvr.getCoverage( coverage, coverageType, function ( err, cov )
         {
             var linePercent = cvr.getLineCoveragePercent( cov );
 
