@@ -1,4 +1,4 @@
-image: docker.vokal.io/python:2.7
+image: docker.vokal.io/web-testing
 script:
     - apt-get update -qq && apt-get -y install wget sudo
     - echo "machine github.com" > ~/.netrc
