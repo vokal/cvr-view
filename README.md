@@ -27,7 +27,7 @@ The required configuration information is for GitHub OAuth and the MongoDB conne
 
 ## Running with forever
 
-`npm install`
-`npm install forever -g`
-`forever start bin/www`
+- `npm install`
+- `npm install forever -g`
+- `forever start bin/www`
 
