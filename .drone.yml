@@ -18,7 +18,7 @@ publish:
         username: $$dockerUsername
         password: $$dockerPassword
         email: scott.ferguson@vokal.io
-        image_name: docker.vokal.io/vokal-wall-ios
+        image_name: docker.vokal.io/cvr
         tags: [latest]
 # deploy:
 #     bash:
