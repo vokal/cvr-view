@@ -1,4 +1,7 @@
 image: docker.vokal.io/web-testing
+env:
+    - BOWER_LOGIN=$$bowerLogin
+    - BOWER_OAUTH=$$bowerOauth
 script:
     - apt-get update -qq && apt-get -y install wget sudo
     - echo "machine github.com" > ~/.netrc
