@@ -223,8 +223,8 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
 
             var commit = repo.commits.filter( function ( c )
             {
-                return c.hash = req.params.hash;
-            });
+                return c.hash === req.params.hash;
+            } );
 
             if( commit.length === 0 )
             {
@@ -242,6 +242,11 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
             var onCov = function ( err, cov )
             {
                 var fileCov = cvr.getFileCoverage( cov, req.params.file );
+
+                if( !fileCov )
+                {
+                    return error( req, res, new Error( "File not found in coverage: " + req.params.file ) );
+                }
 
                 var onFileContent = function ( err, content )
                 {
