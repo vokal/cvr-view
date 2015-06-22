@@ -192,7 +192,6 @@ router.get( "/repo/:owner/:name",
             }
 
             var commit = repo.commits[ repo.commits.length - 1 ];
-            var coverage = commit.coverage;
 
             var onCov = function ( err, cov )
             {
@@ -204,7 +203,7 @@ router.get( "/repo/:owner/:name",
                     authed: true } );
             };
 
-            cvr.getCoverage( coverage, "lcov", onCov );
+            cvr.getCoverage( commit.coverage, commit.coverageType, onCov );
         };
 
         models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
@@ -273,7 +272,7 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
                     req.params.hash, req.params.file, onFileContent );
             };
 
-            cvr.getCoverage( commit[ 0 ].coverage, "lcov", onCov );
+            cvr.getCoverage( commit[ 0 ].coverage, commit[ 0 ].coverageType, onCov );
         };
 
         models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
@@ -326,14 +325,15 @@ var saveCoverage = function ( token, hash, coverage, coverageType, callback )
             if( commit.length )
             {
                 commit[ 0 ].coverage = coverage;
-                commit[ 0 ].linePercent = linePercent
+                commit[ 0 ].linePercent = linePercent;
             }
             else
             {
                 repo.commits.push( {
                     hash: hash,
                     coverage: coverage,
-                    linePercent: linePercent
+                    linePercent: linePercent,
+                    coverageType: coverageType
                 } );
             }
 
