@@ -32,7 +32,7 @@ router.get( "/", function( req, res, next )
 {
     res.render("index", {
         layout: "layout.html",
-        title: "Express",
+        title: "CVR - Code Coverage",
         authed: req.isAuthenticated() });
 } );
 
