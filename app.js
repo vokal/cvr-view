@@ -28,8 +28,8 @@ hbs.registerHelper( "json", function(context) {
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + "/public/favicon.ico" ));
 app.use(logger( "dev" ));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json({ limit: "5mb" }));
+app.use(bodyParser.urlencoded({ extended: false, limit: "5mb" }));
 app.use(cookieParser());
 app.use(require( "less-middleware" )(path.join(__dirname, "public" )));
 app.use(express.static(path.join(__dirname, "public" )));
