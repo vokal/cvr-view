@@ -17,6 +17,7 @@
     "less-middleware": "1.0.x",
     "mongoose": "^4.0.3",
     "morgan": "~1.5.1",
+    "multer": "^0.1.8",
     "passport": "^0.2.1",
     "passport-github": "^0.1.5",
     "passport-oauth": "^1.0.0",

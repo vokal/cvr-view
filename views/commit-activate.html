@@ -11,7 +11,11 @@
         </p>
 
         <p>
-            To post coverage <code>curl --data "token={{ repo.token }}&commit=:commit_hash&coverage=:coverage&coveragetype=lcov|cobertura" https://cvr.vokal.io/coverage</code>
+            To post coverage <br>
+
+            <code>
+                curl -F coverage=@coverage.info "https://cvr.vokal.io/coverage?token={{ repo.token }}&commit=:commit_hash&coveragetype=lcov|cobertura"
+            </code>
         </p>
 
     </div>
