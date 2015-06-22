@@ -280,20 +280,25 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
 
 router.post( "/coverage", function( req, res, next )
 {
+    var onCoverageSaved = function ( err )
+    {
+        if( err )
+        {
+            return res.status( 404 ).send( err.message ).end();
+        }
+
+        return res.status( 201 ).end();
+    };
+
     if( req.body.token && req.body.commit && req.body.coverage )
     {
-        var onCoverageSaved = function ( err )
-        {
-            if( err )
-            {
-                return res.status( 404 ).send( err.message ).end();
-            }
-
-            return res.status( 201 ).end();
-        };
-
         return saveCoverage( req.body.token, req.body.commit,
             req.body.coverage, req.body.coveragetype || "lcov", onCoverageSaved );
+    }
+    else if( req.query.token && req.query.commit && req.body )
+    {
+        return saveCoverage( req.query.token, req.query.commit,
+            req.body, req.query.coveragetype || "lcov", onCoverageSaved );
     }
 
     res.status( 400 ).end();

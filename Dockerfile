@@ -9,4 +9,4 @@ RUN npm install -g forever
 
 EXPOSE 3000
 
-CMD ["forever", "start", "bin/www"]
+CMD ["forever", "bin/www"]
