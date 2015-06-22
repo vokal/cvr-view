@@ -3,7 +3,7 @@ env:
     - BOWER_LOGIN=$$bowerLogin
     - BOWER_OAUTH=$$bowerOauth
 script:
-    - apt-get update -qq && apt-get -y install wget sudo
+    - apt-get update -qq && apt-get -y install wget sudo fabric
     - echo "machine github.com" > ~/.netrc
     - echo "login $BOWER_LOGIN" >> ~/.netrc
     - echo "password $BOWER_OAUTH" >> ~/.netrc
