@@ -20,10 +20,10 @@ publish:
         email: scott.ferguson@vokal.io
         image_name: docker.vokal.io/cvr
         tags: [latest]
-# deploy:
-#     bash:
-#         script:
-#             - fab environment update
+deploy:
+    bash:
+        script:
+            - fab environment update
 notify:
     webhook:
         urls:
