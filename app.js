@@ -6,6 +6,7 @@ var favicon = require( "serve-favicon" );
 var logger = require( "morgan" );
 var cookieParser = require( "cookie-parser" );
 var bodyParser = require( "body-parser" );
+var multer = require( "multer" );
 var hbs = require( "hbs" );
 var passport = require( "passport" );
 var GitHubStrategy = require( "passport-github" ).Strategy;
@@ -28,8 +29,9 @@ hbs.registerHelper( "json", function(context) {
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + "/public/favicon.ico" ));
 app.use(logger( "dev" ));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json({ limit: "5mb" }));
+app.use(bodyParser.urlencoded({ extended: false, limit: "5mb" }));
+app.use(multer({ inMemory: true }));
 app.use(cookieParser());
 app.use(require( "less-middleware" )(path.join(__dirname, "public" )));
 app.use(express.static(path.join(__dirname, "public" )));

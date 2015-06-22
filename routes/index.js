@@ -295,10 +295,10 @@ router.post( "/coverage", function( req, res, next )
         return saveCoverage( req.body.token, req.body.commit,
             req.body.coverage, req.body.coveragetype || "lcov", onCoverageSaved );
     }
-    else if( req.query.token && req.query.commit && req.body )
+    else if( req.query.token && req.query.commit && req.files && req.files.coverage )
     {
         return saveCoverage( req.query.token, req.query.commit,
-            req.body, req.query.coveragetype || "lcov", onCoverageSaved );
+            req.files.coverage.buffer.toString(), req.query.coveragetype || "lcov", onCoverageSaved );
     }
 
     res.status( 400 ).end();
