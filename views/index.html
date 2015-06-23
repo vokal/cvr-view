@@ -43,6 +43,16 @@
                 For example, if a path looks like /User/docs/build/file.js, use removepath=/User/docs/
                 to map the path to build/file.js
             </li>
+            <li>
+                <strong>prependpath</strong> (optional)<br>
+                A file path segment that will be prepended to paths in the coverage data. This makes it easier to
+                map paths in coverage data to paths in the git repo.
+                <em>Line by line coverage will not be available if the coverage paths
+                do not match the paths from the git project root.</em><br>
+
+                For example, if a path looks like file.js, use prependpath=project/
+                to map the path to project/file.js
+            </li>
         </ul>
     </div>
 </div>
