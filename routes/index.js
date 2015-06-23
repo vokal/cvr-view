@@ -251,6 +251,13 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
                 {
                     if( err )
                     {
+                        var errMessage = JSON.parse( err.message ).message;
+                        if( errMessage === "Not Found" )
+                        {
+                            return error( req, res, new Error( "The path " + req.params.file
+                                + " does not exist at commit " + req.params.hash
+                                + ". Is the path correctly based from the project root?" ) );
+                        }
                         return error( req, res, err );
                     }
 
