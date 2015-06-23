@@ -4,5 +4,43 @@
         <p>View line-by-line coverage reports by posting code coverage in LCOV or Cobertura.</p>
         {{#if authed}}{{else}}<p>First, <a href="/auth/github">use your GitHub account to log in</a>.</p>{{/if}}
         <p><a href="/repos">Browse repos</a> to view coverage or get a token to post coverage.</p>
+
+        <h2>
+            Use
+        </h2>
+
+
+        <h3>curl</h3>
+        <code>
+            curl -F coverage=@coverage.info "https://cvr.vokal.io/coverage?token=:TOKEN&commit=:COMMIT_HASH&coveragetype=:COVERAGE_TYPE&removepath=:REMOVE_PATH"
+        </code>
+
+        <h3>Details</h3>
+        <ul>
+            <li>
+                <strong>coverage</strong> (required)<br>
+                The coverage file contents posted in multipart format
+            </li>
+            <li>
+                <strong>token</strong> (required)<br>
+                The token provided with each repo, <a href="/repos">browse repos to get a token</a>
+            </li>
+            <li>
+                <strong>commit</strong> (required)<br>
+                The git commit hash. In bash you can get this like <code>COMMIT_HASH="$(git rev-parse HEAD)"</code>
+            </li>
+            <li>
+                <strong>coveragetype</strong> (optional, lcov|cobertura, default is lcov)<br>
+                The type of coverage being sent
+            </li>
+            <li>
+                <strong>removepath</strong> (optional)<br>
+                A provided file path segment will be removed from the coverage data. This makes it easier to
+                map the paths in your coverage data to the paths in the git repo.<br>
+
+                For example, if your paths look like /User/docs/build/file.js, you can use removepath=/User/docs/
+                so the path will be converted to build/file.js
+            </li>
+        </ul>
     </div>
 </div>
