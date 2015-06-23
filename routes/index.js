@@ -251,7 +251,14 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
                 {
                     if( err )
                     {
-                        return error( req, res, err );
+                        var errMessage = JSON.parse( err.message ).message;
+                        if( errMessage === "Not Found" )
+                        {
+                            return error( req, res, new Error( "The path " + req.params.file
+                                + " does not exist at commit " + req.params.hash
+                                + ". Is the path correctly based from the project root?" ) );
+                        }
+                        return error( req, res, new Error( errMessage ) );
                     }
 
                     res.render( "coverage", {
@@ -294,19 +301,25 @@ router.post( "/coverage", function( req, res, next )
     {
         return saveCoverage( req.body.token, req.body.commit,
             req.body.coverage, req.body.coveragetype || "lcov",
-            req.body.removepath, onCoverageSaved );
+            {
+                removePath: req.body.removepath,
+                prependPath: req.body.prependpath
+            } , onCoverageSaved );
     }
     else if( req.query.token && req.query.commit && req.files && req.files.coverage )
     {
         return saveCoverage( req.query.token, req.query.commit,
             req.files.coverage.buffer.toString(), req.query.coveragetype || "lcov",
-            req.query.removepath, onCoverageSaved );
+            {
+                removePath: req.query.removepath,
+                prependPath: req.query.prependpath
+            }, onCoverageSaved );
     }
 
     res.status( 400 ).send( "Required parameters missing" ).end();
 } );
 
-var saveCoverage = function ( token, hash, coverage, coverageType, removePath, callback )
+var saveCoverage = function ( token, hash, coverage, coverageType, options, callback )
 {
     if( [ "lcov", "cobertura" ].indexOf( coverageType ) === -1 )
     {
@@ -318,10 +331,14 @@ var saveCoverage = function ( token, hash, coverage, coverageType, removePath, c
         return callback( new Error( "Coverage is empty" ) );
     }
 
-    if( removePath )
+    if( options.removePath )
     {
-        var exp = new RegExp( removePath.replace( /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&" ), "g" );
-        coverage = coverage.replace( exp, "" );
+        coverage = cvr.removePath( coverage, options.removePath );
+    }
+
+    if( options.prependPath )
+    {
+        coverage = cvr.prependPath( coverage, options.prependPath, coverageType );
     }
 
     var onRepo = function ( err, repo )
