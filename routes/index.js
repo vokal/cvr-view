@@ -284,7 +284,7 @@ router.post( "/coverage", function( req, res, next )
     {
         if( err )
         {
-            return res.status( 404 ).send( err.message ).end();
+            return res.status( 400 ).send( err.message ).end();
         }
 
         return res.status( 201 ).end();
@@ -301,11 +301,16 @@ router.post( "/coverage", function( req, res, next )
             req.files.coverage.buffer.toString(), req.query.coveragetype || "lcov", onCoverageSaved );
     }
 
-    res.status( 400 ).end();
+    res.status( 400 ).send( "Required parameters missing" ).end();
 } );
 
 var saveCoverage = function ( token, hash, coverage, coverageType, callback )
 {
+    if( [ "lcov", "cobertura" ].indexOf( coverageType ) === -1 )
+    {
+        return callback( new Error( "Coverage Type not valid" ) );
+    }
+
     var onRepo = function ( err, repo )
     {
         if( err )
