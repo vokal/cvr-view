@@ -230,14 +230,6 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
                 return res.status( 404 ).end();
             }
 
-            var shiftLineIndex = function ( lines )
-            {
-                return lines.map( function ( l )
-                {
-                    return l - 1;
-                } );
-            };
-
             var onCov = function ( err, cov )
             {
                 var fileCov = cvr.getFileCoverage( cov, req.params.file );
@@ -268,8 +260,8 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
                         hash: req.params.hash,
                         fileName: req.params.file,
                         extension: cvr.getFileType( req.params.file ),
-                        linesCovered: shiftLineIndex( cvr.linesCovered( fileCov ) ).join( "," ),
-                        linesMissing: shiftLineIndex( cvr.linesMissing( fileCov ) ).join( "," ),
+                        linesCovered: cvr.linesCovered( fileCov ).join( "," ),
+                        linesMissing: cvr.linesMissing( fileCov ).join( "," ),
                         source: content,
                         authed: true
                      } );
