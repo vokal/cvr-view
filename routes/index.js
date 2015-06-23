@@ -293,22 +293,35 @@ router.post( "/coverage", function( req, res, next )
     if( req.body.token && req.body.commit && req.body.coverage )
     {
         return saveCoverage( req.body.token, req.body.commit,
-            req.body.coverage, req.body.coveragetype || "lcov", onCoverageSaved );
+            req.body.coverage, req.body.coveragetype || "lcov",
+            req.body.removepath, onCoverageSaved );
     }
     else if( req.query.token && req.query.commit && req.files && req.files.coverage )
     {
         return saveCoverage( req.query.token, req.query.commit,
-            req.files.coverage.buffer.toString(), req.query.coveragetype || "lcov", onCoverageSaved );
+            req.files.coverage.buffer.toString(), req.query.coveragetype || "lcov",
+            req.query.removepath, onCoverageSaved );
     }
 
     res.status( 400 ).send( "Required parameters missing" ).end();
 } );
 
-var saveCoverage = function ( token, hash, coverage, coverageType, callback )
+var saveCoverage = function ( token, hash, coverage, coverageType, removePath, callback )
 {
     if( [ "lcov", "cobertura" ].indexOf( coverageType ) === -1 )
     {
         return callback( new Error( "Coverage Type not valid" ) );
+    }
+
+    if( !coverage )
+    {
+        return callback( new Error( "Coverage is empty" ) );
+    }
+
+    if( removePath )
+    {
+        var exp = new RegExp( removePath.replace( /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&" ), "g" );
+        coverage = coverage.replace( exp, "" );
     }
 
     var onRepo = function ( err, repo )
@@ -330,6 +343,11 @@ var saveCoverage = function ( token, hash, coverage, coverageType, callback )
 
         cvr.getCoverage( coverage, coverageType, function ( err, cov )
         {
+            if( err )
+            {
+                return callback( err );
+            }
+
             var linePercent = cvr.getLineCoveragePercent( cov );
 
             if( commit.length )
