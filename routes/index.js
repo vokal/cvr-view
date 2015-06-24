@@ -18,16 +18,6 @@ db.once('open', function (callback) {
   // yay!
 });
 
-var error = function ( req, res, err )
-{
-    res.render( "error", {
-        message: err ? err.message : "Server Error",
-        error: err,
-        layout: "layout.html",
-        authed: req.isAuthenticated()
-    });
-};
-
 router.get( "/", function( req, res, next )
 {
     res.render("index", {
@@ -47,7 +37,7 @@ router.get( "/repos",
         {
             if( err )
             {
-                return error( req, res, err );
+                return next( err );
             }
 
             res.render( "repos", {
@@ -64,7 +54,7 @@ router.get( "/repos",
             {
                 if( err )
                 {
-                    return error( req, res, err );
+                    return next( err );
                 }
 
                 if( req.query.refresh )
@@ -81,7 +71,7 @@ router.get( "/repos",
                 {
                     if( err )
                     {
-                        return error( req, res, err );
+                        return next( err );
                     }
 
                     user.activeRepos = [];
@@ -119,7 +109,7 @@ router.get( "/repos",
         {
             if( err )
             {
-                return error( req, res, err );
+                return next( err );
             }
 
             if( !user )
@@ -140,7 +130,7 @@ router.get( "/repos",
                 {
                     if( err )
                     {
-                        return error( req, res, err );
+                        return next( err );
                     }
 
                     user.repos = repos.map( function ( r )
@@ -168,7 +158,7 @@ router.get( "/repo/:owner/:name/:hash?",
         {
             if( err )
             {
-                return error( req, res, err );
+                return next( err );
             }
 
             if( !repo )
@@ -202,7 +192,9 @@ router.get( "/repo/:owner/:name/:hash?",
 
                 if( !commit )
                 {
-                    return res.status( 404 );
+                    var commit404 = new Error( "Commit not found" );
+                    commit404.status = 404;
+                    return next( commit404 );
                 }
             }
 
@@ -237,7 +229,7 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
         {
             if( err )
             {
-                return error( req, res, err );
+                return next( err );
             }
 
             if( !repo )
@@ -261,7 +253,9 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
 
                 if( !fileCov )
                 {
-                    return error( req, res, new Error( "File not found in coverage: " + req.params.file ) );
+                    var file404 = new Error( "File not found in coverage: " + req.params.file );
+                    file404.status = 404;
+                    return next( file404 );
                 }
 
                 var onFileContent = function ( err, content )
@@ -271,11 +265,13 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
                         var errMessage = JSON.parse( err.message ).message;
                         if( errMessage === "Not Found" )
                         {
-                            return error( req, res, new Error( "The path " + req.params.file
+                            var path404 = new Error( "The path " + req.params.file
                                 + " does not exist at commit " + req.params.hash
-                                + ". Is the path correctly based from the project root?" ) );
+                                + ". Is the path correctly based from the project root?" );
+                            path404.status = 404;
+                            return next( path404 );
                         }
-                        return error( req, res, new Error( errMessage ) );
+                        return next( new Error( errMessage ) );
                     }
 
                     res.render( "coverage", {
