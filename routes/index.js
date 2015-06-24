@@ -150,6 +150,27 @@ router.get( "/repos",
         models.User.findOne( { "oauth.username": username }, onUser );
     } );
 
+router.get( "/repo/:owner/:name/new-token",
+    auth.ensureAuthenticated,
+    function( req, res, next )
+    {
+        var onRepo = function ( err, repo )
+        {
+            if( err )
+            {
+                return next( err );
+            }
+
+            repo.token = uuid.raw();
+            repo.save( function ()
+            {
+                return res.redirect( "/repo/" + req.params.owner + "/" + req.params.name );
+            }, next );
+        };
+
+        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
+    } );
+
 router.get( "/repo/:owner/:name/:hash?",
     auth.ensureAuthenticated,
     function( req, res, next )
@@ -206,6 +227,11 @@ router.get( "/repo/:owner/:name/:hash?",
 
             var onCov = function ( err, cov )
             {
+                cov.forEach( function ( file )
+                {
+                    file.complete = file.lines.hit === file.lines.found;
+                } );
+
                 res.render( "commit", {
                     layout: "layout.html",
                     repo: repo,

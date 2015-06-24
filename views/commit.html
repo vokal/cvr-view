@@ -1,5 +1,6 @@
 <div class="container">
     <div class="row">
+
         <h1>{{ repo.owner }}/{{ repo.name }}</h1>
 
         <h2>#{{ hash }}</h2>
@@ -19,6 +20,11 @@
             <code>
                 curl -F coverage=@coverage.info "https://cvr.vokal.io/coverage?token={{ repo.token }}&commit=:commit_hash&coveragetype=lcov|cobertura"
             </code>
+            <br>
+            <a href="/repo/{{ repo.owner }}/{{ repo.name }}/new-token"
+                onclick="return( confirm( 'Are you sure you want to reset the token?' ) )">
+                Generate new token
+            </a>
         </p>
 
         <table class="files">
@@ -40,7 +46,7 @@
 
             <tbody>
             {{#each cov}}
-                <tr>
+                <tr class="{{#if complete}}complete{{/if}}">
                     <td>
                         <a href="/repo/{{ ../repo.owner }}/{{ ../repo.name }}/{{ ../hash }}/{{ file }}">
                             {{ file }}
@@ -53,7 +59,9 @@
                         {{ functions.hit }} / {{ functions.found }}
                     </td>
                     <td>
+                        {{#if branches.found}}
                         {{ branches.hit }} / {{ branches.found }}
+                        {{/if}}
                     </td>
                 </tr>
             {{/each}}
