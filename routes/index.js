@@ -160,7 +160,7 @@ router.get( "/repos",
         models.User.findOne( { "oauth.username": username }, onUser );
     } );
 
-router.get( "/repo/:owner/:name",
+router.get( "/repo/:owner/:name/:hash?",
     auth.ensureAuthenticated,
     function( req, res, next )
     {
@@ -193,6 +193,25 @@ router.get( "/repo/:owner/:name",
 
             var commit = repo.commits[ repo.commits.length - 1 ];
 
+            if( req.params.hash )
+            {
+                commit = repo.commits.filter( function ( c )
+                {
+                    return c.hash === req.params.hash;
+                } )[ 0 ];
+
+                if( !commit )
+                {
+                    return res.status( 404 );
+                }
+            }
+
+            var hashes = repo.commits.map( function ( c )
+            {
+                return c.hash;
+            } );
+            hashes.reverse();
+
             var onCov = function ( err, cov )
             {
                 res.render( "commit", {
@@ -200,6 +219,7 @@ router.get( "/repo/:owner/:name",
                     repo: repo,
                     cov: cov,
                     hash: commit.hash,
+                    hashes: hashes,
                     authed: true } );
             };
 
@@ -218,6 +238,11 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
             if( err )
             {
                 return error( req, res, err );
+            }
+
+            if( !repo )
+            {
+                return res.status( 404 );
             }
 
             var commit = repo.commits.filter( function ( c )
