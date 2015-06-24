@@ -4,6 +4,15 @@
 
         <h2>#{{ hash }}</h2>
 
+        <select onchange="if( this.value ) { window.location.href = '/repo/{{ repo.owner }}/{{ repo.name }}/' + this.value; }">
+            <option value="">Commit History</option>
+            {{#each hashes }}
+            <option value="{{ . }}">{{ . }}</option>
+            {{/each}}
+        </select>
+
+        <br>
+        <br>
         <p>
             To post coverage <br>
 

@@ -104,7 +104,8 @@ if (app.get( "env" ) === "development" ) {
     res.render( "error", {
       message: err.message,
       error: err,
-      layout: "layout.html"
+      layout: "layout.html",
+      authed: req.isAuthenticated()
     });
   });
 }
@@ -116,7 +117,8 @@ app.use(function(err, req, res, next) {
   res.render( "error", {
     message: err.message,
     error: {},
-    layout: "layout.html"
+    layout: "layout.html",
+    authed: req.isAuthenticated()
   });
 });
 
