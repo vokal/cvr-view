@@ -12,8 +12,11 @@ var passport = require( "passport" );
 var GitHubStrategy = require( "passport-github" ).Strategy;
 var session = require( "express-session" );
 var flash = require( "connect-flash" );
+var cvr = require( "cvr" );
 
 var routes = require( "./routes/index" );
+
+var orgsWhitelist = process.env.ORGS_WHITELIST || require( "./local-settings.json" ).orgsWhitelist;
 
 var app = express();
 
@@ -68,11 +71,27 @@ passport.use(new GitHubStrategy({
   function(req, accessToken, refreshToken, profile, done) {
     process.nextTick( function()
     {
-      var user = { token: accessToken, profile: profile };
-      req.session.user = user;
+      cvr.getGitHubOrgs( accessToken, function ( err, orgs )
+      {
+        var orgValid = true;
 
-      // TODO: associate with local user instead of raw github user
-      return done( null, user );
+        if( orgsWhitelist && Array.isArray( orgsWhitelist ) )
+        {
+          orgValid = orgs.some( function ( o )
+          {
+            return orgsWhitelist.indexOf( o.login ) !== -1;
+          } );
+        }
+
+        if( !orgValid )
+        {
+          return done( new Error( "No permitted organization on account" ) );
+        }
+
+        var user = { token: accessToken, profile: profile };
+        req.session.user = user;
+        return done( null, user );
+      } );
     } );
   }
 ));
