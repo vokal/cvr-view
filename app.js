@@ -16,7 +16,11 @@ var cvr = require( "cvr" );
 
 var routes = require( "./routes/index" );
 
-var orgsWhitelist = process.env.ORGS_WHITELIST || require( "./local-settings.json" ).orgsWhitelist;
+var orgsWhitelist = require( "./local-settings.json" ).gitHub.orgsWhitelist;
+if( process.env.GITHUB_ORGS_WHITELIST )
+{
+  orgsWhitelist = process.env.GITHUB_ORGS_WHITELIST.split( ":" );
+}
 
 var app = express();
 
