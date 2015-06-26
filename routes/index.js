@@ -120,6 +120,16 @@ router.get( "/repos",
                 }});
             }
 
+            if( user.oauth.token !== req.session.user.token )
+            {
+                user.oauth.token = req.session.user.token;
+
+                if( user.repos.length && !req.query.refresh )
+                {
+                    user.save();
+                }
+            }
+
             if( user.repos.length && !req.query.refresh )
             {
                 onUserRepos( null, user );
@@ -358,7 +368,7 @@ router.post( "/coverage", function( req, res, next )
     res.status( 400 ).send( "Required parameters missing" ).end();
 } );
 
-var saveCoverage = function ( token, hash, coverage, coverageType, options, callback )
+var saveCoverage = function ( cvrToken, hash, coverage, coverageType, options, callback )
 {
     if( [ "lcov", "cobertura" ].indexOf( coverageType ) === -1 )
     {
@@ -421,11 +431,69 @@ var saveCoverage = function ( token, hash, coverage, coverageType, options, call
                 } );
             }
 
+            var onGotAccessToken = function ( err, tokenRes )
+            {
+                // not sure how errors should be handled here yet, silent failure seems like an ok option
+                if( err )
+                {
+                    console.log( err.message );
+                }
+                if( tokenRes.oauth.token )
+                {
+                    var newStatus = linePercent >= 80 ? "success" : "failure";
+
+                    cvr.createGitHubStatus( tokenRes.oauth.token, repo.owner,
+                        repo.name, hash, newStatus, function ( err )
+                        {
+                            // another silent failure?
+                            if( err )
+                            {
+                                console.log( err.message );
+                            }
+                        } );
+                }
+            };
+
+            models.User.getTokenForRepoFullName( repo.fullName, onGotAccessToken );
+
             repo.save( callback );
         } );
     };
 
-    models.Repo.findOne( { token: token }, onRepo );
+    models.Repo.findOne( { token: cvrToken }, onRepo );
 };
+
+router.post( "/webhook", function( req, res, next )
+{
+    var onSetPending = function ( err )
+    {
+        if( err )
+        {
+            return res.status( 400 ).send( "Unable to set pending status" ).end();
+        }
+
+        return res.status( 201 ).send( "Created status" ).end();
+    };
+
+    var pr = req.body.pull_request;
+
+    if( !pr )
+    {
+        return res.status( 400 ).send( "Not a Pull Request" ).end();
+    }
+
+    var onGotAccessToken = function ( err, tokenRes )
+    {
+        if( err || !tokenRes.oauth.token )
+        {
+            return res.status( 400 ).send( "No permission to set status" ).end();
+        }
+
+        cvr.createGitHubStatus( tokenRes.oauth.token, pr.head.user.login,
+            pr.head.repo.name, pr.head.sha, "pending", onSetPending );
+    };
+
+    models.User.getTokenForRepoFullName( pr.head.repo.full_name, onGotAccessToken );
+} );
 
 module.exports = router;
