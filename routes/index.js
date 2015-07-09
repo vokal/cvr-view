@@ -450,10 +450,17 @@ var saveCoverage = function ( cvrToken, hash, coverage, coverageType, options, c
                 }
                 if( tokenRes.oauth.token )
                 {
-                    var newStatus = linePercent >= 80 ? "success" : "failure";
+                    var minLinePercent = 80;
+                    var passing = linePercent >= minLinePercent;
+                    var newStatus = passing ? "success" : "failure";
+                    var newDescription = linePercent + "% line coverage";
+                    if( !passing )
+                    {
+                        newDescription += " - requires " + minLinePercent + "%";
+                    }
 
                     cvr.createGitHubStatus( tokenRes.oauth.token, repo.owner,
-                        repo.name, hash, newStatus, function ( err )
+                        repo.name, hash, newStatus, newDescription, function ( err )
                         {
                             // another silent failure?
                             if( err )
@@ -500,7 +507,7 @@ router.post( "/webhook", function( req, res, next )
         }
 
         cvr.createGitHubStatus( tokenRes.oauth.token, pr.head.user.login,
-            pr.head.repo.name, pr.head.sha, "pending", onSetPending );
+            pr.head.repo.name, pr.head.sha, "pending", "code coverage pending", onSetPending );
     };
 
     models.User.getTokenForRepoFullName( pr.head.repo.full_name, onGotAccessToken );
