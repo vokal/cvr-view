@@ -12,6 +12,8 @@ var models = require( "../lib/models" );
 var dbConn = process.env.DB_CONN || require( "../local-settings.json" ).dbConn;
 mongoose.connect( dbConn );
 
+var webhookUrl = process.env.WEBHOOK_URL || require( "../local-settings.json" ).webhookUrl;
+
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function (callback) {
@@ -203,6 +205,14 @@ router.get( "/repo/:owner/:name/:hash?",
                 });
                 repo.save();
             }
+
+            cvr.createGitHubHook( req.session.user.token, repo.owner, repo.name, webhookUrl, function ( err )
+            {
+                if( err )
+                {
+                    console.log( "failed to register hook" );
+                }
+            } );
 
             if( repo.commits.length === 0 )
             {
@@ -404,7 +414,7 @@ var saveCoverage = function ( cvrToken, hash, coverage, coverageType, options, c
 
         var commit = repo.commits.filter( function ( c )
         {
-            return c.hash == hash;
+            return c.hash === hash;
         } );
 
         cvr.getCoverage( coverage, coverageType, function ( err, cov )
