@@ -356,31 +356,33 @@ router.post( "/coverage", function( req, res, next )
         return res.status( 201 ).end();
     };
 
-    if( req.body.token && req.body.commit && req.body.coverage )
+    var captureOn = req.body.commit ? req.body : req.query;
+
+    var options = {
+        token: captureOn.token,
+        owner: captureOn.owner,
+        repo: captureOn.repo,
+        isPullRequest: captureOn.ispullrequest,
+        removePath: captureOn.removepath,
+        prependPath: captureOn.prependpath
+    };
+
+    var coverage = req.files && req.files.coverage
+        ? req.files.coverage.buffer.toString()
+        : captureOn.coverage;
+
+    if( captureOn.commit && coverage && ( options.token || options.owner && options.repo ) )
     {
-        return saveCoverage( req.body.token, req.body.commit,
-            req.body.coverage, req.body.coveragetype || "lcov",
-            {
-                removePath: req.body.removepath,
-                prependPath: req.body.prependpath
-            } , onCoverageSaved );
-    }
-    else if( req.query.token && req.query.commit && req.files && req.files.coverage )
-    {
-        return saveCoverage( req.query.token, req.query.commit,
-            req.files.coverage.buffer.toString(), req.query.coveragetype || "lcov",
-            {
-                removePath: req.query.removepath,
-                prependPath: req.query.prependpath
-            }, onCoverageSaved );
+        return saveCoverage( captureOn.commit, coverage,
+            captureOn.coveragetype || "lcov", options, onCoverageSaved );
     }
 
     res.status( 400 ).send( "Required parameters missing" ).end();
 } );
 
-var saveCoverage = function ( cvrToken, hash, coverage, coverageType, options, callback )
+var saveCoverage = function ( hash, coverage, coverageType, options, callback )
 {
-    if( [ "lcov", "cobertura" ].indexOf( coverageType ) === -1 )
+    if( [ "lcov", "cobertura", "jacoco" ].indexOf( coverageType ) === -1 )
     {
         return callback( new Error( "Coverage Type not valid" ) );
     }
@@ -437,7 +439,8 @@ var saveCoverage = function ( cvrToken, hash, coverage, coverageType, options, c
                     hash: hash,
                     coverage: coverage,
                     linePercent: linePercent,
-                    coverageType: coverageType
+                    coverageType: coverageType,
+                    isPullRequest: !!options.isPullRequest
                 } );
             }
 
@@ -477,7 +480,14 @@ var saveCoverage = function ( cvrToken, hash, coverage, coverageType, options, c
         } );
     };
 
-    models.Repo.findOne( { token: cvrToken }, onRepo );
+    if( options.token )
+    {
+        models.Repo.findOne( { token: options.token }, onRepo );
+    }
+    else
+    {
+        models.Repo.findByOwnerAndName( options.owner, options.repo, onRepo );
+    }
 };
 
 router.post( "/webhook", function( req, res, next )
