@@ -18,8 +18,7 @@ The required configuration information is for GitHub OAuth and the MongoDB conne
         "orgsWhitelist": [ ... ]
     },
     "dbConn": "mongodb://...",
-    "host": "https://cvr.vokal.io/",
-    "webhookUrl": "https://cvr.vokal.io/webhook"
+    "host": "https://cvr.vokal.io/"
 }
 ```
 

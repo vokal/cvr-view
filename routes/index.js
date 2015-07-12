@@ -12,7 +12,7 @@ var models = require( "../lib/models" );
 var dbConn = process.env.DB_CONN || require( "../local-settings.json" ).dbConn;
 mongoose.connect( dbConn );
 
-var webhookUrl = process.env.WEBHOOK_URL || require( "../local-settings.json" ).webhookUrl;
+var host = process.env.HOST || require( "../local-settings.json" ).host;
 
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -206,7 +206,7 @@ router.get( "/repo/:owner/:name/:hash?",
                 repo.save();
             }
 
-            cvr.createGitHubHook( req.session.user.token, repo.owner, repo.name, webhookUrl, function ( err )
+            cvr.createGitHubHook( req.session.user.token, repo.owner, repo.name, host + "webhook", function ( err )
             {
                 if( err )
                 {
