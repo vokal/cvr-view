@@ -12,6 +12,8 @@ var models = require( "../lib/models" );
 var dbConn = process.env.DB_CONN || require( "../local-settings.json" ).dbConn;
 mongoose.connect( dbConn );
 
+var host = process.env.HOST || require( "../local-settings.json" ).host;
+
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function (callback) {
@@ -204,6 +206,14 @@ router.get( "/repo/:owner/:name/:hash?",
                 repo.save();
             }
 
+            cvr.createGitHubHook( req.session.user.token, repo.owner, repo.name, host + "webhook", function ( err )
+            {
+                if( err )
+                {
+                    console.log( "failed to register hook" );
+                }
+            } );
+
             if( repo.commits.length === 0 )
             {
                 return res.render( "commit-activate", {
@@ -346,31 +356,33 @@ router.post( "/coverage", function( req, res, next )
         return res.status( 201 ).end();
     };
 
-    if( req.body.token && req.body.commit && req.body.coverage )
+    var captureOn = req.body.commit ? req.body : req.query;
+
+    var options = {
+        token: captureOn.token,
+        owner: captureOn.owner,
+        repo: captureOn.repo,
+        isPullRequest: captureOn.ispullrequest,
+        removePath: captureOn.removepath,
+        prependPath: captureOn.prependpath
+    };
+
+    var coverage = req.files && req.files.coverage
+        ? req.files.coverage.buffer.toString()
+        : captureOn.coverage;
+
+    if( captureOn.commit && coverage && ( options.token || options.owner && options.repo ) )
     {
-        return saveCoverage( req.body.token, req.body.commit,
-            req.body.coverage, req.body.coveragetype || "lcov",
-            {
-                removePath: req.body.removepath,
-                prependPath: req.body.prependpath
-            } , onCoverageSaved );
-    }
-    else if( req.query.token && req.query.commit && req.files && req.files.coverage )
-    {
-        return saveCoverage( req.query.token, req.query.commit,
-            req.files.coverage.buffer.toString(), req.query.coveragetype || "lcov",
-            {
-                removePath: req.query.removepath,
-                prependPath: req.query.prependpath
-            }, onCoverageSaved );
+        return saveCoverage( captureOn.commit, coverage,
+            captureOn.coveragetype || "lcov", options, onCoverageSaved );
     }
 
     res.status( 400 ).send( "Required parameters missing" ).end();
 } );
 
-var saveCoverage = function ( cvrToken, hash, coverage, coverageType, options, callback )
+var saveCoverage = function ( hash, coverage, coverageType, options, callback )
 {
-    if( [ "lcov", "cobertura" ].indexOf( coverageType ) === -1 )
+    if( [ "lcov", "cobertura", "jacoco" ].indexOf( coverageType ) === -1 )
     {
         return callback( new Error( "Coverage Type not valid" ) );
     }
@@ -404,7 +416,7 @@ var saveCoverage = function ( cvrToken, hash, coverage, coverageType, options, c
 
         var commit = repo.commits.filter( function ( c )
         {
-            return c.hash == hash;
+            return c.hash === hash;
         } );
 
         cvr.getCoverage( coverage, coverageType, function ( err, cov )
@@ -427,7 +439,8 @@ var saveCoverage = function ( cvrToken, hash, coverage, coverageType, options, c
                     hash: hash,
                     coverage: coverage,
                     linePercent: linePercent,
-                    coverageType: coverageType
+                    coverageType: coverageType,
+                    isPullRequest: !!options.isPullRequest
                 } );
             }
 
@@ -440,10 +453,17 @@ var saveCoverage = function ( cvrToken, hash, coverage, coverageType, options, c
                 }
                 if( tokenRes.oauth.token )
                 {
-                    var newStatus = linePercent >= 80 ? "success" : "failure";
+                    var minLinePercent = 80;
+                    var passing = linePercent >= minLinePercent;
+                    var newStatus = passing ? "success" : "failure";
+                    var newDescription = linePercent + "% line coverage";
+                    if( !passing )
+                    {
+                        newDescription += " - requires " + minLinePercent + "%";
+                    }
 
                     cvr.createGitHubStatus( tokenRes.oauth.token, repo.owner,
-                        repo.name, hash, newStatus, function ( err )
+                        repo.name, hash, newStatus, newDescription, function ( err )
                         {
                             // another silent failure?
                             if( err )
@@ -460,7 +480,14 @@ var saveCoverage = function ( cvrToken, hash, coverage, coverageType, options, c
         } );
     };
 
-    models.Repo.findOne( { token: cvrToken }, onRepo );
+    if( options.token )
+    {
+        models.Repo.findOne( { token: options.token }, onRepo );
+    }
+    else
+    {
+        models.Repo.findByOwnerAndName( options.owner, options.repo, onRepo );
+    }
 };
 
 router.post( "/webhook", function( req, res, next )
@@ -490,7 +517,7 @@ router.post( "/webhook", function( req, res, next )
         }
 
         cvr.createGitHubStatus( tokenRes.oauth.token, pr.head.user.login,
-            pr.head.repo.name, pr.head.sha, "pending", onSetPending );
+            pr.head.repo.name, pr.head.sha, "pending", "code coverage pending", onSetPending );
     };
 
     models.User.getTokenForRepoFullName( pr.head.repo.full_name, onGotAccessToken );
