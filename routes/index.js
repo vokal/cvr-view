@@ -291,7 +291,7 @@ router.get( "/repo/:owner/:name/:hash?",
             {
                 cov.forEach( function ( file )
                 {
-                    file.complete = file.lines.hit === file.lines.found;
+                    file.linePercent = 100 * file.lines.hit / file.lines.found;
                 } );
 
                 res.render( "commit", {

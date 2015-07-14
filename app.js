@@ -43,6 +43,15 @@ hbs.registerHelper( "commitStatus", function( linePercent, minPassingLinePercent
     return linePercent >= minPassingLinePercent ? "passing" : "failing";
 } );
 
+hbs.registerHelper( "fileStatus", function( linePercent, minPassingLinePercent )
+{
+    return linePercent === 100
+        ? "passing"
+        : linePercent < minPassingLinePercent
+            ? "failing"
+            : "";
+} );
+
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + "/public/favicon.ico" ));
 app.use(logger( "dev" ));

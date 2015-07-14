@@ -45,7 +45,7 @@
 
             <tbody>
             {{#each cov}}
-                <tr class="{{#if complete}}complete{{/if}}">
+                <tr class="{{fileStatus linePercent ../repo.minPassingLinePercent}}">
                     <td>
                         <a href="/repo/{{ ../repo.owner }}/{{ ../repo.name }}/{{ ../hash }}/{{ file }}">
                             {{ file }}
