@@ -1,0 +1,35 @@
+<div class="container">
+    <div class="row">
+
+        <a href="/repo/{{ repo.owner }}/{{ repo.name }}" class="btn sync">
+            Back
+        </a>
+
+        <h1>{{ repo.owner }}/{{ repo.name }}</h1>
+
+        <br>
+        <br>
+        <p>
+            <a href="/repo/{{ repo.owner }}/{{ repo.name }}/new-token"
+                onclick="return( confirm( 'Are you sure you want to reset the token?' ) )">
+                Generate new token
+            </a>
+        </p>
+
+         <form method="POST" action="">
+            <h2>Settings</h2>
+            <ul>
+                <li>
+                    <label>
+                        Minimum Passing Line Percent Coverage
+                        <input type="text" name="minPassingLinePercent" value="{{ repo.minPassingLinePercent }}">
+                    </label>
+                </li>
+                <li>
+                    <input type="submit" class="btn-primary btn" value="Save Settings">
+                </li>
+            </ul>
+        </form>
+
+    </div>
+</div>

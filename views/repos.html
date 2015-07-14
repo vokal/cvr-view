@@ -9,15 +9,15 @@
 
         <table class="repos">
         {{#each activeRepos}}
-            <tr>
+            <tr class="{{commitStatus linePercent minPassingLinePercent }}">
                 <td>
                     <a href="/repo/{{ fullName }}">
                         {{ fullName }}
                     </a>
                 </td>
                 <td>
-                    {{#if linePercent}}
-                        {{ linePercent }}%
+                    {{#if linePercentFormatted }}
+                        {{ linePercentFormatted }}%
                     {{else}}
                         New
                     {{/if}}

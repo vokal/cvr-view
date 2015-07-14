@@ -46,6 +46,42 @@ table {
     float: right;
 }
 
-.files tr.complete td {
+tr.complete td,
+tr.passing td {
     background-color: #EFE;
+}
+
+tr.failing td {
+    background-color: #FEE;
+}
+
+
+ul,
+li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+form {
+    background: #F8F8F8;
+    padding: 10px;
+
+    label {
+        display: block;
+
+        input {
+            margin-top: 5px;
+        }
+    }
+
+    li {
+        list-style: none;
+        padding: 10px 0;
+        border-bottom: 1px solid #CCC;
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
 }

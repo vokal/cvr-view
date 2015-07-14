@@ -29,9 +29,19 @@ app.set( "views", path.join(__dirname, "views" ));
 app.set( "view engine", "html" );
 app.engine( "html", hbs.__express);
 
-hbs.registerHelper( "json", function(context) {
+hbs.registerHelper( "json", function( context )
+{
     return JSON.stringify(context);
-});
+} );
+
+hbs.registerHelper( "commitStatus", function( linePercent, minPassingLinePercent )
+{
+    if( linePercent === undefined )
+    {
+        return "";
+    }
+    return linePercent >= minPassingLinePercent ? "passing" : "failing";
+} );
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + "/public/favicon.ico" ));
