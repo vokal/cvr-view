@@ -456,7 +456,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                     var minLinePercent = 80;
                     var passing = linePercent >= minLinePercent;
                     var newStatus = passing ? "success" : "failure";
-                    var newDescription = linePercent + "% line coverage";
+                    var newDescription = linePercent.toFixed( 2 ) + "% line coverage";
                     if( !passing )
                     {
                         newDescription += " - requires " + minLinePercent + "%";
