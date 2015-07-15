@@ -69,7 +69,7 @@ router.get( "/repos",
                     return r.fullName;
                 } );
 
-                models.Repo.findFullNameInArray( repoFullNames, function ( err, activeRepos )
+                models.Repo.findFullNameInArray( repoFullNames, 1, function ( err, activeRepos )
                 {
                     if( err )
                     {
@@ -90,7 +90,9 @@ router.get( "/repos",
                             if( activeRepo[ 0 ].commits && activeRepo[ 0 ].commits.length )
                             {
                                 var lastCoverage = activeRepo[ 0 ].commits[ activeRepo[ 0 ].commits.length - 1 ];
-                                userRepo.linePercent = lastCoverage.linePercent.toFixed( 0 );
+                                userRepo.linePercent = lastCoverage.linePercent;
+                                userRepo.linePercentFormatted = lastCoverage.linePercent.toFixed( 0 );
+                                userRepo.minPassingLinePercent = activeRepo[ 0 ].minPassingLinePercent;
                             }
 
                             user.activeRepos.push( userRepo );
@@ -183,6 +185,46 @@ router.get( "/repo/:owner/:name/new-token",
         models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
     } );
 
+
+router.all( "/repo/:owner/:name/settings",
+    auth.ensureAuthenticated,
+    function( req, res, next )
+    {
+        var onRepo = function ( err, repo )
+        {
+            if( err )
+            {
+                return next( err );
+            }
+
+            var render = function ()
+            {
+                res.render( "repo-settings", {
+                    layout: "layout.html",
+                    repo: repo,
+                    authed: true } );
+            };
+
+            if( req.body.minPassingLinePercent !== undefined )
+            {
+                repo.minPassingLinePercent = req.body.minPassingLinePercent;
+                repo.save( function ( err )
+                {
+                    if( err )
+                    {
+                        return next( err );
+                    }
+                    return render();
+                } );
+            }
+
+            return render();
+        };
+
+        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
+    } );
+
+
 router.get( "/repo/:owner/:name/:hash?",
     auth.ensureAuthenticated,
     function( req, res, next )
@@ -249,7 +291,7 @@ router.get( "/repo/:owner/:name/:hash?",
             {
                 cov.forEach( function ( file )
                 {
-                    file.complete = file.lines.hit === file.lines.found;
+                    file.linePercent = 100 * file.lines.hit / file.lines.found;
                 } );
 
                 res.render( "commit", {
