@@ -495,13 +495,12 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                 }
                 if( tokenRes.oauth.token )
                 {
-                    var minLinePercent = 80;
-                    var passing = linePercent >= minLinePercent;
+                    var passing = linePercent >= repo.minPassingLinePercent;
                     var newStatus = passing ? "success" : "failure";
                     var newDescription = linePercent.toFixed( 2 ) + "% line coverage";
                     if( !passing )
                     {
-                        newDescription += " - requires " + minLinePercent + "%";
+                        newDescription += " - requires " + repo.minPassingLinePercent + "%";
                     }
 
                     cvr.createGitHubStatus( tokenRes.oauth.token, repo.owner,
