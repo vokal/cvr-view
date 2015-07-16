@@ -182,7 +182,7 @@ router.get( "/repo/:owner/:name/new-token",
             }, next );
         };
 
-        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
+        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, 0, onRepo );
     } );
 
 
@@ -221,7 +221,7 @@ router.all( "/repo/:owner/:name/settings",
             return render();
         };
 
-        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
+        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, 0, onRepo );
     } );
 
 
@@ -256,58 +256,77 @@ router.get( "/repo/:owner/:name/:hash?",
                 }
             } );
 
-            if( repo.commits.length === 0 )
+            var onCommit = function ( err, repoCommits )
             {
-                return res.render( "commit-activate", {
-                    layout: "layout.html",
-                    repo: repo,
-                    authed: true } );
-            }
-
-            var commit = repo.commits[ repo.commits.length - 1 ];
-
-            if( req.params.hash )
-            {
-                commit = repo.commits.filter( function ( c )
-                {
-                    return c.hash === req.params.hash;
-                } )[ 0 ];
-
-                if( !commit )
+                if( err || !repoCommits.commits.length )
                 {
                     var commit404 = new Error( "Commit not found" );
                     commit404.status = 404;
                     return next( commit404 );
                 }
-            }
 
-            var hashes = repo.commits.map( function ( c )
-            {
-                return { hash: c.hash, isPullRequest: c.isPullRequest };
-            } );
-            hashes.reverse();
+                var commit = repoCommits.commits[ 0 ];
 
-            var onCov = function ( err, cov )
-            {
-                cov.forEach( function ( file )
+                var onHashList = function ( err, hashList )
                 {
-                    file.linePercent = 100 * file.lines.hit / file.lines.found;
-                } );
+                    if( err )
+                    {
+                        return next( err );
+                    }
 
-                res.render( "commit", {
-                    layout: "layout.html",
-                    repo: repo,
-                    cov: cov,
-                    hash: commit.hash,
-                    isPullRequest: commit.isPullRequest,
-                    hashes: hashes,
-                    authed: true } );
+                    if( hashList.length === 0 )
+                    {
+                        return res.render( "commit-activate", {
+                            layout: "layout.html",
+                            repo: repo,
+                            authed: true } );
+                    }
+
+                    var hashes = hashList.commits.map( function ( c )
+                    {
+                        return { hash: c.hash, isPullRequest: c.isPullRequest };
+                    } );
+                    hashes.reverse();
+
+                    var onCov = function ( err, cov )
+                    {
+                        if( err )
+                        {
+                            return next( err );
+                        }
+
+                        cov.forEach( function ( file )
+                        {
+                            file.linePercent = 100 * file.lines.hit / file.lines.found;
+                        } );
+
+                        res.render( "commit", {
+                            layout: "layout.html",
+                            repo: repo,
+                            cov: cov,
+                            hash: commit.hash,
+                            isPullRequest: commit.isPullRequest,
+                            hashes: hashes,
+                            authed: true } );
+                    };
+
+                    cvr.getCoverage( commit.coverage, commit.coverageType, onCov );
+                };
+
+                models.Repo.findCommitList( repo.owner, repo.name, onHashList );
             };
 
-            cvr.getCoverage( commit.coverage, commit.coverageType, onCov );
+            if( req.params.hash )
+            {
+                models.Repo.findCommit( repo.owner, repo.name, req.params.hash, onCommit );
+            }
+            else
+            {
+                onCommit( null, repo );
+            }
         };
 
-        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
+        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, req.params.hash ? 0 : 1, onRepo );
     } );
 
 router.get( "/repo/:owner/:name/:hash/:file(*)",
@@ -326,65 +345,72 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
                 return res.status( 404 );
             }
 
-            var commit = repo.commits.filter( function ( c )
+            var onCommit = function ( err, repoCommit )
             {
-                return c.hash === req.params.hash;
-            } );
-
-            if( commit.length === 0 )
-            {
-                return res.status( 404 ).end();
-            }
-
-            var onCov = function ( err, cov )
-            {
-                var fileCov = cvr.getFileCoverage( cov, req.params.file );
-
-                if( !fileCov )
+                if( err )
                 {
-                    var file404 = new Error( "File not found in coverage: " + req.params.file );
-                    file404.status = 404;
-                    return next( file404 );
+                    return next( err );
                 }
 
-                var onFileContent = function ( err, content )
+                if( repoCommit.commits.length === 0 )
                 {
-                    if( err )
+                    return res.status( 404 ).end();
+                }
+
+                var commit = repoCommit.commits[ 0 ];
+
+                var onCov = function ( err, cov )
+                {
+                    var fileCov = cvr.getFileCoverage( cov, req.params.file );
+
+                    if( !fileCov )
                     {
-                        var errMessage = JSON.parse( err.message ).message;
-                        if( errMessage === "Not Found" )
-                        {
-                            var path404 = new Error( "The path " + req.params.file
-                                + " does not exist at commit " + req.params.hash
-                                + ". Is the path correctly based from the project root?" );
-                            path404.status = 404;
-                            return next( path404 );
-                        }
-                        return next( new Error( errMessage ) );
+                        var file404 = new Error( "File not found in coverage: " + req.params.file );
+                        file404.status = 404;
+                        return next( file404 );
                     }
 
-                    res.render( "coverage", {
-                        layout: "layout.html",
-                        repo: repo,
-                        cov: cov,
-                        hash: req.params.hash,
-                        fileName: req.params.file,
-                        extension: cvr.getFileType( req.params.file ),
-                        linesCovered: cvr.linesCovered( fileCov ).join( "," ),
-                        linesMissing: cvr.linesMissing( fileCov ).join( "," ),
-                        source: content,
-                        authed: true
-                     } );
+                    var onFileContent = function ( err, content )
+                    {
+                        if( err )
+                        {
+                            var errMessage = JSON.parse( err.message ).message;
+                            if( errMessage === "Not Found" )
+                            {
+                                var path404 = new Error( "The path " + req.params.file
+                                    + " does not exist at commit " + req.params.hash
+                                    + ". Is the path correctly based from the project root?" );
+                                path404.status = 404;
+                                return next( path404 );
+                            }
+                            return next( new Error( errMessage ) );
+                        }
+
+                        res.render( "coverage", {
+                            layout: "layout.html",
+                            repo: repo,
+                            cov: cov,
+                            hash: req.params.hash,
+                            fileName: req.params.file,
+                            extension: cvr.getFileType( req.params.file ),
+                            linesCovered: cvr.linesCovered( fileCov ).join( "," ),
+                            linesMissing: cvr.linesMissing( fileCov ).join( "," ),
+                            source: content,
+                            authed: true
+                         } );
+                    };
+
+                    cvr.getGitHubFile( req.session.user.token, req.params.owner, req.params.name,
+                        req.params.hash, req.params.file, onFileContent );
                 };
 
-                cvr.getGitHubFile( req.session.user.token, req.params.owner, req.params.name,
-                    req.params.hash, req.params.file, onFileContent );
+                cvr.getCoverage( commit.coverage, commit.coverageType, onCov );
             };
 
-            cvr.getCoverage( commit[ 0 ].coverage, commit[ 0 ].coverageType, onCov );
+            models.Repo.findCommit( repo.owner, repo.name, req.params.hash, onCommit );
         };
 
-        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
+        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, 0, onRepo );
     } );
 
 router.post( "/coverage", function( req, res, next )
@@ -457,78 +483,85 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
             return callback( new Error( "Token is not registered" ) );
         }
 
-        var commit = repo.commits.filter( function ( c )
-        {
-            return c.hash === hash;
-        } );
-
-        cvr.getCoverage( coverage, coverageType, function ( err, cov )
+        var onCommit = function ( err, repoCommit )
         {
             if( err )
             {
                 return callback( err );
             }
 
-            var linePercent = cvr.getLineCoveragePercent( cov );
+            var commits = repoCommit.commits;
 
-            if( commit.length )
+            cvr.getCoverage( coverage, coverageType, function ( err, cov )
             {
-                commit[ 0 ].coverage = coverage;
-                commit[ 0 ].linePercent = linePercent;
-            }
-            else
-            {
-                repo.commits.push( {
-                    hash: hash,
-                    coverage: coverage,
-                    linePercent: linePercent,
-                    coverageType: coverageType,
-                    isPullRequest: !!options.isPullRequest
-                } );
-            }
-
-            var onGotAccessToken = function ( err, tokenRes )
-            {
-                // not sure how errors should be handled here yet, silent failure seems like an ok option
                 if( err )
                 {
-                    console.log( err.message );
+                    return callback( err );
                 }
-                if( tokenRes.oauth.token )
+
+                var linePercent = cvr.getLineCoveragePercent( cov );
+
+                if( commits.length )
                 {
-                    var passing = linePercent >= repo.minPassingLinePercent;
-                    var newStatus = passing ? "success" : "failure";
-                    var newDescription = linePercent.toFixed( 2 ) + "% line coverage";
-                    if( !passing )
-                    {
-                        newDescription += " - requires " + repo.minPassingLinePercent + "%";
-                    }
-
-                    cvr.createGitHubStatus( tokenRes.oauth.token, repo.owner,
-                        repo.name, hash, newStatus, newDescription, function ( err )
-                        {
-                            // another silent failure?
-                            if( err )
-                            {
-                                console.log( err.message );
-                            }
-                        } );
+                    commits[ 0 ].coverage = coverage;
+                    commits[ 0 ].linePercent = linePercent;
                 }
-            };
+                else
+                {
+                    repo.commits.push( {
+                        hash: hash,
+                        coverage: coverage,
+                        linePercent: linePercent,
+                        coverageType: coverageType,
+                        isPullRequest: !!options.isPullRequest
+                    } );
+                }
 
-            models.User.getTokenForRepoFullName( repo.fullName, onGotAccessToken );
+                var onGotAccessToken = function ( err, tokenRes )
+                {
+                    // not sure how errors should be handled here yet, silent failure seems like an ok option
+                    if( err )
+                    {
+                        console.log( err.message );
+                    }
+                    if( tokenRes.oauth.token )
+                    {
+                        var passing = linePercent >= repo.minPassingLinePercent;
+                        var newStatus = passing ? "success" : "failure";
+                        var newDescription = linePercent.toFixed( 2 ) + "% line coverage";
+                        if( !passing )
+                        {
+                            newDescription += " - requires " + repo.minPassingLinePercent + "%";
+                        }
 
-            repo.save( callback );
-        } );
+                        cvr.createGitHubStatus( tokenRes.oauth.token, repo.owner,
+                            repo.name, hash, newStatus, newDescription, function ( err )
+                            {
+                                // another silent failure?
+                                if( err )
+                                {
+                                    console.log( err.message );
+                                }
+                            } );
+                    }
+                };
+
+                models.User.getTokenForRepoFullName( repo.fullName, onGotAccessToken );
+
+                repo.save( callback );
+            } );
+        };
+
+        models.Repo.findCommit( repo.owner, repo.name, hash, onCommit );
     };
 
     if( options.token )
     {
-        models.Repo.findOne( { token: options.token }, onRepo );
+        models.Repo.findByToken( { token: options.token }, 0, onRepo );
     }
     else
     {
-        models.Repo.findByOwnerAndName( options.owner, options.repo, onRepo );
+        models.Repo.findByOwnerAndName( options.owner, options.repo, 0, onRepo );
     }
 };
 
