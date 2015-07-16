@@ -283,7 +283,7 @@ router.get( "/repo/:owner/:name/:hash?",
 
             var hashes = repo.commits.map( function ( c )
             {
-                return c.hash;
+                return { hash: c.hash, isPullRequest: c.isPullRequest };
             } );
             hashes.reverse();
 
@@ -299,6 +299,7 @@ router.get( "/repo/:owner/:name/:hash?",
                     repo: repo,
                     cov: cov,
                     hash: commit.hash,
+                    isPullRequest: commit.isPullRequest,
                     hashes: hashes,
                     authed: true } );
             };
