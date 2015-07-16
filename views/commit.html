@@ -7,12 +7,15 @@
 
         <h1>{{ repo.owner }}/{{ repo.name }}</h1>
 
-        <h2>#{{ hash }}</h2>
+        <h2>
+            #{{ hash }}
+            {{#if isPullRequest }}<span class="badge pr">Pull Request</span>{{/if}}
+        </h2>
 
         <select onchange="if( this.value ) { window.location.href = '/repo/{{ repo.owner }}/{{ repo.name }}/' + this.value; }">
             <option value="">Commit History</option>
             {{#each hashes }}
-            <option value="{{ . }}">{{ . }}</option>
+            <option value="{{ hash }}">{{ hash }} {{#if isPullRequest }}(Pull Request){{/if}}</option>
             {{/each}}
         </select>
 
