@@ -557,7 +557,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
 
     if( options.token )
     {
-        models.Repo.findByToken( { token: options.token }, 0, onRepo );
+        models.Repo.findByToken( options.token, 0, onRepo );
     }
     else
     {
