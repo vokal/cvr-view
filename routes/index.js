@@ -256,31 +256,31 @@ router.get( "/repo/:owner/:name/:hash?",
                 }
             } );
 
-            var onCommit = function ( err, repoCommits )
+            var onHashList = function ( err, hashList )
             {
-                if( err || !repoCommits.commits.length )
+                if( err )
                 {
-                    var commit404 = new Error( "Commit not found" );
-                    commit404.status = 404;
-                    return next( commit404 );
+                    return next( err );
                 }
 
-                var commit = repoCommits.commits[ 0 ];
-
-                var onHashList = function ( err, hashList )
+                if( hashList.commits.length === 0 )
                 {
-                    if( err )
+                    return res.render( "commit-activate", {
+                        layout: "layout.html",
+                        repo: repo,
+                        authed: true } );
+                }
+
+                var onCommit = function ( err, repoCommits )
+                {
+                    if( err || !repoCommits.commits.length )
                     {
-                        return next( err );
+                        var commit404 = new Error( "Commit not found" );
+                        commit404.status = 404;
+                        return next( commit404 );
                     }
 
-                    if( hashList.length === 0 )
-                    {
-                        return res.render( "commit-activate", {
-                            layout: "layout.html",
-                            repo: repo,
-                            authed: true } );
-                    }
+                    var commit = repoCommits.commits[ 0 ];
 
                     var hashes = hashList.commits.map( function ( c )
                     {
@@ -313,17 +313,17 @@ router.get( "/repo/:owner/:name/:hash?",
                     cvr.getCoverage( commit.coverage, commit.coverageType, onCov );
                 };
 
-                models.Repo.findCommitList( repo.owner, repo.name, onHashList );
+                if( req.params.hash )
+                {
+                    models.Repo.findCommit( repo.owner, repo.name, req.params.hash, onCommit );
+                }
+                else
+                {
+                    onCommit( null, repo );
+                }
             };
 
-            if( req.params.hash )
-            {
-                models.Repo.findCommit( repo.owner, repo.name, req.params.hash, onCommit );
-            }
-            else
-            {
-                onCommit( null, repo );
-            }
+            models.Repo.findCommitList( repo.owner, repo.name, onHashList );
         };
 
         models.Repo.findByOwnerAndName( req.params.owner, req.params.name, req.params.hash ? 0 : 1, onRepo );
@@ -557,7 +557,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
 
     if( options.token )
     {
-        models.Repo.findByToken( { token: options.token }, 0, onRepo );
+        models.Repo.findByToken( options.token, 0, onRepo );
     }
     else
     {
