@@ -50,7 +50,7 @@ curl -F coverage=@coverage.info "https://cvr.vokal.io/coverage?token=:TOKEN&comm
                 The git commit hash. In bash you can get this like <code>COMMIT_HASH="$(git rev-parse HEAD)"</code>
             </li>
             <li class="list-group-item">
-                <strong>coveragetype</strong> (optional, lcov|cobertura, default is lcov)<br>
+                <strong>coveragetype</strong> (optional, lcov|cobertura|jacoco, default is lcov)<br>
                 The type of coverage being sent
             </li>
             <li class="list-group-item">
@@ -85,11 +85,14 @@ curl -F coverage=@coverage.info "https://cvr.vokal.io/coverage?token=:TOKEN&comm
 <code>
 #!/bin/bash
 
-LCOV_OUTPUT_DIR="${BUILT_PRODUCTS_DIR}/lcov"
+# Required Travis config:
+# - Add the repo token in the variable CVR_TOKEN as a secure property in the Travis configuration
+# - LCOV_OUTPUT below must be the file path to the coverage output
+
 
 if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
     # Upload the non-PR coverage to cvr.vokal.io
-    curl -F coverage=@"${LCOV_OUTPUT_DIR}/Coverage.info" \
+    curl -F coverage=@"${LCOV_OUTPUT}" \
         "https://cvr.vokal.io/coverage?token=${CVR_TOKEN}&commit=${TRAVIS_COMMIT}&removepath=${TRAVIS_BUILD_DIR}"
 
     # Exit successfully (so that the pull-request type uploading doesn't happen).
@@ -106,7 +109,7 @@ REPO_NAME="${TRAVIS_REPO_SLUG##*/}"
 GIT_PARAMS="commit=${LAST_PR_COMMIT}&owner=${REPO_OWNER}&repo=${REPO_NAME}"
 # Do the actual upload of PR coverage to cvr.vokal.io.
 URL="https://cvr.vokal.io/coverage?${GIT_PARAMS}&removepath=${TRAVIS_BUILD_DIR}&ispullrequest=1"
-curl -F coverage=@"${LCOV_OUTPUT_DIR}/Coverage.info" "${URL}"
+curl -F coverage=@"${LCOV_OUTPUT}" "${URL}"
 </code>
 </pre>
 
