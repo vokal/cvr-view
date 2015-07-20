@@ -29,6 +29,7 @@ The required configuration information is for GitHub OAuth and the MongoDB conne
 - GITHUB_CALLBACKURL
 - GITHUB_ORGS_WHITELIST
 - DB_CONN
+- HOST
 
 ## Running with forever
 
