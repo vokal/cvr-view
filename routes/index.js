@@ -263,7 +263,7 @@ router.get( "/repo/:owner/:name/:hash?",
                     return next( err );
                 }
 
-                if( hashList.commits.length === 0 )
+                if( !hashList || hashList.commits.length === 0 )
                 {
                     return res.render( "commit-activate", {
                         layout: "layout.html",
