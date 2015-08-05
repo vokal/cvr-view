@@ -119,15 +119,30 @@ passport.use(new GitHubStrategy({
   }
 ));
 
-app.get( "/auth/github", passport.authenticate( "github" ));
+app.get( "/auth/github", passport.authenticate( "github" ) );
 
 app.get( "/auth/github/callback",
-  passport.authenticate( "github", { successRedirect: "/repos", failureRedirect: "/" }));
+  passport.authenticate( "github", { successRedirect: "/auth/github/success", failureRedirect: "/" } ) );
 
-app.get( "/logout", function(req, res){
+app.get( "/auth/github/success", function ( req, res )
+{
+  var onauth = req.cookies.onauth;
+  if( onauth )
+  {
+    res.clearCookie( "onauth" );
+    res.redirect( onauth );
+  }
+  else
+  {
+    res.redirect( "/repos" );
+  }
+} );
+
+app.get( "/logout", function( req, res )
+{
   req.logout();
   res.redirect( "/" );
-});
+} );
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

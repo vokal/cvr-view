@@ -499,24 +499,6 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                     return callback( err );
                 }
 
-                var linePercent = cvr.getLineCoveragePercent( cov );
-
-                if( commits.length )
-                {
-                    commits[ 0 ].coverage = coverage;
-                    commits[ 0 ].linePercent = linePercent;
-                }
-                else
-                {
-                    repo.commits.push( {
-                        hash: hash,
-                        coverage: coverage,
-                        linePercent: linePercent,
-                        coverageType: coverageType,
-                        isPullRequest: !!options.isPullRequest
-                    } );
-                }
-
                 var onGotAccessToken = function ( err, tokenRes )
                 {
                     // not sure how errors should be handled here yet, silent failure seems like an ok option
@@ -546,9 +528,35 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                     }
                 };
 
-                models.User.getTokenForRepoFullName( repo.fullName, onGotAccessToken );
+                var linePercent = cvr.getLineCoveragePercent( cov );
 
-                repo.save( callback );
+                if( commits.length )
+                {
+                    commits[ 0 ].coverage = coverage;
+                    commits[ 0 ].linePercent = linePercent;
+                    repo.save( callback );
+                }
+                else
+                {
+                    var newCommit = {
+                        hash: hash,
+                        coverage: coverage,
+                        linePercent: linePercent,
+                        coverageType: coverageType,
+                        isPullRequest: !!options.isPullRequest
+                    };
+
+                    models.Repo.pushCommit( repo._id, newCommit, function ( err )
+                    {
+                        if( err )
+                        {
+                            return callback( err );
+                        }
+                        repo.save( callback );
+                    } );
+                }
+
+                models.User.getTokenForRepoFullName( repo.fullName, onGotAccessToken );
             } );
         };
 
