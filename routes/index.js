@@ -516,8 +516,17 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                             newDescription += " - requires " + repo.minPassingLinePercent + "%";
                         }
 
-                        cvr.createGitHubStatus( tokenRes.oauth.token, repo.owner,
-                            repo.name, hash, newStatus, newDescription, function ( err )
+                        var status = {
+                            user: repo.owner,
+                            repo: repo.name,
+                            sha: hash,
+                            state: newStatus,
+                            context: "cvr",
+                            description: newDescription,
+                            target_url: host + "/repo/" + repo.owner + "/" + repo.name + "/" + hash
+                        };
+
+                        cvr.createGitHubStatus( tokenRes.oauth.token, status, function ( err )
                             {
                                 // another silent failure?
                                 if( err )
@@ -599,8 +608,16 @@ router.post( "/webhook", function( req, res, next )
             return res.status( 400 ).send( "No permission to set status on " + pr.base.repo.full_name ).end();
         }
 
-        cvr.createGitHubStatus( tokenRes.oauth.token, pr.head.user.login,
-            pr.head.repo.name, pr.head.sha, "pending", "code coverage pending", onSetPending );
+        var status = {
+            user: pr.head.user.login,
+            repo: pr.head.repo.name,
+            sha: pr.head.sha,
+            state: "pending",
+            context: "cvr",
+            description: "code coverage pending"
+        };
+
+        cvr.createGitHubStatus( tokenRes.oauth.token, status, onSetPending );
     };
 
     models.User.getTokenForRepoFullName( pr.base.repo.full_name, onGotAccessToken );
