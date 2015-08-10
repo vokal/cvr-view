@@ -609,8 +609,8 @@ router.post( "/webhook", function( req, res, next )
         }
 
         var status = {
-            user: pr.head.user.login,
-            repo: pr.head.repo.name,
+            user: pr.base.user.login,
+            repo: pr.base.repo.name,
             sha: pr.head.sha,
             state: "pending",
             context: "cvr",
