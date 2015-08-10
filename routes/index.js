@@ -523,7 +523,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                             state: newStatus,
                             context: "cvr",
                             description: newDescription,
-                            target_url: host + "/repo/" + repo.owner + "/" + repo.name + "/" + hash
+                            target_url: host + "repo/" + repo.owner + "/" + repo.name + "/" + hash
                         };
 
                         cvr.createGitHubStatus( tokenRes.oauth.token, status, function ( err )
