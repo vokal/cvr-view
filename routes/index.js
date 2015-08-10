@@ -523,7 +523,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                             state: newStatus,
                             context: "cvr",
                             description: newDescription,
-                            target_url: host + "/repo/" + repo.owner + "/" + repo.name + "/" + hash
+                            target_url: host + "repo/" + repo.owner + "/" + repo.name + "/" + hash
                         };
 
                         cvr.createGitHubStatus( tokenRes.oauth.token, status, function ( err )
@@ -609,8 +609,8 @@ router.post( "/webhook", function( req, res, next )
         }
 
         var status = {
-            user: pr.head.user.login,
-            repo: pr.head.repo.name,
+            user: pr.base.user.login,
+            repo: pr.base.repo.name,
             sha: pr.head.sha,
             state: "pending",
             context: "cvr",
