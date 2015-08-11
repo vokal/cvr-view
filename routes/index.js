@@ -64,7 +64,7 @@ router.get( "/repos",
                     return res.redirect( "/repos" );
                 }
 
-                user.repos = user.repos.sort( function ( a, b  )
+                user.repos = user.repos.sort( function ( a, b )
                 {
                     return a.fullName.toLowerCase() > b.fullName.toLowerCase() ? 1
                         : a.fullName.toLowerCase() < b.fullName.toLowerCase() ? -1
