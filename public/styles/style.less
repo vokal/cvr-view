@@ -3,6 +3,7 @@
 
 body {
     padding-top: 70px;
+    font-family: "Source Sans Pro", sans-serif;
 }
 
 .repos {
@@ -12,16 +13,27 @@ body {
 
 .repos li {
     list-style: none;
+    background: #F2F2F2;
 
     a {
         display: block;
         padding: 5px 10px;
-        background: #F2F2F2;
         margin-bottom: 2px;
+        transition: background 200ms;
+        color: #000;
 
         &:hover {
-            background: #EEE;
+            background: rgba(0,0,0,0.1);
+            text-decoration: none;
         }
+    }
+
+    .owner {
+        min-width: 100px;
+    }
+
+    .badge {
+        float: right;
     }
 }
 
@@ -46,13 +58,21 @@ table {
     float: right;
 }
 
-tr.complete td,
-tr.passing td {
+li.complete,
+li.passing {
     background-color: #DFD;
+
+    .badge {
+        background: #070;
+    }
 }
 
-tr.failing td {
+li.failing {
     background-color: #FDD;
+
+    .badge {
+        background: #700;
+    }
 }
 
 
@@ -83,5 +103,32 @@ form {
         &:last-child {
             border-bottom: none;
         }
+    }
+}
+
+.owner,
+.repo {
+    display: inline-block;
+    padding: 3px;
+}
+
+.repo {
+    font-weight: bold;
+}
+
+.fraction {
+    color: #999;
+    white-space: nowrap;
+
+    .num {
+        color: #000;
+        font-weight: bold;
+        display: inline-block;
+        min-width: 24px;
+        text-align: right;
+    }
+
+    .den {
+        color: #000;
     }
 }

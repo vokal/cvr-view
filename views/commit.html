@@ -55,14 +55,23 @@
                         </a>
                     </td>
                     <td>
-                        {{ lines.hit }} / {{ lines.found }}
+                        <span class="fraction">
+                            <span class="num">{{ lines.hit }}</span> /
+                            <span class="den">{{ lines.found }}</span>
+                        </span>
                     </td>
                     <td>
-                        {{ functions.hit }} / {{ functions.found }}
+                        <span class="fraction">
+                            <span class="num">{{ functions.hit }}</span> /
+                            <span class="den">{{ functions.found }}</span>
+                        </span>
                     </td>
                     <td>
                         {{#if branches.found}}
-                        {{ branches.hit }} / {{ branches.found }}
+                        <span class="fraction">
+                            <span class="num">{{ branches.hit }}</span> /
+                            <span class="den">{{ branches.found }}</span>
+                        </span>
                         {{/if}}
                     </td>
                 </tr>
