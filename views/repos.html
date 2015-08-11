@@ -7,32 +7,33 @@
 
         <h1>{{title}}</h1>
 
-        <table class="repos">
+        <ul class="repos">
         {{#each activeRepos}}
-            <tr class="{{commitStatus linePercent minPassingLinePercent }}">
-                <td>
-                    <a href="/repo/{{ fullName }}">
-                        {{ fullName }}
-                    </a>
-                </td>
-                <td>
-                    {{#if linePercentFormatted }}
-                        {{ linePercentFormatted }}%
-                    {{else}}
-                        New
-                    {{/if}}
-                </td>
-            </tr>
+            <li class="{{commitStatus linePercent minPassingLinePercent }}">
+                <a href="/repo/{{ fullName }}">
+                    <span class="owner">{{ owner }}</span>
+                    <span class="repo">{{ name }}</span>
+
+                    <span class="badge">
+                        {{#if linePercentFormatted }}
+                            {{ linePercentFormatted }}%
+                        {{else}}
+                            New
+                        {{/if}}
+                    </span>
+                </a>
+            </li>
         {{/each}}
-        </table>
+        </ul>
 
         <br><br>
 
         <ul class="repos">
         {{#each repos}}
             <li>
-                <a href="/repo/{{ fullName }}">
-                    {{ fullName }}
+                <a href="/repo/{{ fullName }}">                    
+                    <span class="owner">{{ owner }}</span>
+                    <span class="repo">{{ name }}</span>
                 </a>
             </li>
         {{/each}}
