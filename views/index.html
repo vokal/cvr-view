@@ -73,6 +73,10 @@ curl -F coverage=@coverage.info "https://cvr.vokal.io/coverage?token=:TOKEN&comm
                 For example, if a path looks like file.js, use prependpath=project/
                 to map the path to project/file.js
             </li>
+            <li class="list-group-item">
+                <strong>ispullrequest</strong> (optional)<br>
+                Pass a truthy value to mark the commit_hash as a pull request, this shows as a badge on the commit page.
+            </li>
         </ul>
 
         <h3>Travis</h3>
