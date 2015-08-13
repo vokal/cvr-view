@@ -15,14 +15,14 @@ mongoose.connect( dbConn );
 var host = process.env.HOST || require( "../local-settings.json" ).host;
 
 var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function (callback) {
+db.on( "error", console.error.bind( console, "connection error:" ));
+db.once( "open", function ( callback ) {
   // yay!
 });
 
-router.get( "/", function( req, res, next )
+router.get( "/", function ( req, res, next )
 {
-    res.render("index", {
+    res.render( "index", {
         layout: "layout.html",
         title: "CVR - Code Coverage",
         authed: req.isAuthenticated() });
@@ -30,7 +30,7 @@ router.get( "/", function( req, res, next )
 
 router.get( "/repos",
     auth.ensureAuthenticated,
-    function( req, res, next )
+    function ( req, res, next )
     {
         var username = req.session.user.profile.username;
 
@@ -98,7 +98,6 @@ router.get( "/repos",
                             {
                                 var lastCoverage = activeRepo[ 0 ].commits[ activeRepo[ 0 ].commits.length - 1 ];
                                 userRepo.linePercent = lastCoverage.linePercent;
-                                userRepo.linePercentFormatted = lastCoverage.linePercent.toFixed( 0 );
                                 userRepo.minPassingLinePercent = activeRepo[ 0 ].minPassingLinePercent;
                             }
 
@@ -173,7 +172,7 @@ router.get( "/repos",
 
 router.get( "/repo/:owner/:name/new-token",
     auth.ensureAuthenticated,
-    function( req, res, next )
+    function ( req, res, next )
     {
         var onRepo = function ( err, repo )
         {
@@ -195,7 +194,7 @@ router.get( "/repo/:owner/:name/new-token",
 
 router.all( "/repo/:owner/:name/settings",
     auth.ensureAuthenticated,
-    function( req, res, next )
+    function ( req, res, next )
     {
         var onRepo = function ( err, repo )
         {
@@ -234,7 +233,7 @@ router.all( "/repo/:owner/:name/settings",
 
 router.get( "/repo/:owner/:name/:hash?",
     auth.ensureAuthenticated,
-    function( req, res, next )
+    function ( req, res, next )
     {
         var onRepo = function ( err, repo )
         {
@@ -310,6 +309,7 @@ router.get( "/repo/:owner/:name/:hash?",
                         res.render( "commit", {
                             layout: "layout.html",
                             repo: repo,
+                            commit: repo.commits[ 0 ] || commit,
                             cov: cov,
                             hash: commit.hash,
                             isPullRequest: commit.isPullRequest,
@@ -338,7 +338,7 @@ router.get( "/repo/:owner/:name/:hash?",
 
 router.get( "/repo/:owner/:name/:hash/:file(*)",
     auth.ensureAuthenticated,
-    function( req, res, next )
+    function ( req, res, next )
     {
         var onRepo = function ( err, repo )
         {
@@ -420,7 +420,7 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
         models.Repo.findByOwnerAndName( req.params.owner, req.params.name, 0, onRepo );
     } );
 
-router.post( "/coverage", function( req, res, next )
+router.post( "/coverage", function ( req, res, next )
 {
     var onCoverageSaved = function ( err )
     {
@@ -589,7 +589,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
     }
 };
 
-router.post( "/webhook", function( req, res, next )
+router.post( "/webhook", function ( req, res, next )
 {
     var onSetPending = function ( err )
     {
@@ -605,7 +605,7 @@ router.post( "/webhook", function( req, res, next )
 
     if( !pr )
     {
-        return res.status( 400 ).send( "Not a Pull Request" ).end();
+        return res.status( 202 ).send( "Not a Pull Request" ).end();
     }
 
     var onGotAccessToken = function ( err, tokenRes )

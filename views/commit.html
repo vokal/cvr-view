@@ -9,6 +9,7 @@
 
         <h2>
             #{{ hash }}
+            <span class="badge {{commitStatus commit.linePercent repo.minPassingLinePercent }}">{{linePercentFormatted commit.linePercent }}</span>
             {{#if isPullRequest }}<span class="badge pr">Pull Request</span>{{/if}}
         </h2>
 
@@ -26,14 +27,6 @@
 
             <code>
                 curl -F coverage=@coverage.info "https://cvr.vokal.io/coverage?token={{ repo.token }}&commit=:commit_hash&coveragetype=lcov|cobertura"
-            </code>
-        </p>
-
-        <p>
-            To post pull request coverage <br>
-
-            <code>
-                curl -F coverage=@coverage.info "https://cvr.vokal.io/coverage?owner={{ repo.owner }}&repo={{ repo.name }}&ispullrequest=1&commit=:commit_hash&coveragetype=lcov|cobertura"
             </code>
         </p>
 

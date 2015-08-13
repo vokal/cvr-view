@@ -1,6 +1,11 @@
 @import (inline) "prism.css";
 @import "prism-custom.less";
 
+
+@badge-passing: #070;
+@badge-failing: #700;
+
+
 body {
     padding-top: 70px;
     font-family: "Source Sans Pro", sans-serif;
@@ -58,12 +63,13 @@ table {
     float: right;
 }
 
+
 li.complete,
 li.passing {
     background-color: #DFD;
 
     .badge {
-        background: #070;
+        background: @badge-passing;
     }
 }
 
@@ -71,8 +77,17 @@ li.failing {
     background-color: #FDD;
 
     .badge {
-        background: #700;
+        background: @badge-failing;
     }
+}
+
+.badge.passing,
+.badge.complete {
+    background: @badge-passing;
+}
+
+.badge.failing {
+    background: @badge-failing;
 }
 
 
