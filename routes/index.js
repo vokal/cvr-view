@@ -605,7 +605,7 @@ router.post( "/webhook", function ( req, res, next )
 
     if( !pr )
     {
-        return res.status( 204 ).send( "Not a Pull Request" ).end();
+        return res.status( 202 ).send( "Not a Pull Request" ).end();
     }
 
     var onGotAccessToken = function ( err, tokenRes )
