@@ -25,16 +25,16 @@ if( process.env.GITHUB_ORGS_WHITELIST )
 var app = express();
 
 // view engine setup
-app.set( "views", path.join(__dirname, "views" ));
+app.set( "views", path.join( __dirname, "views" ));
 app.set( "view engine", "html" );
-app.engine( "html", hbs.__express);
+app.engine( "html", hbs.__express );
 
-hbs.registerHelper( "json", function( context )
+hbs.registerHelper( "json", function ( context )
 {
-    return JSON.stringify(context);
+    return JSON.stringify( context );
 } );
 
-hbs.registerHelper( "commitStatus", function( linePercent, minPassingLinePercent )
+hbs.registerHelper( "commitStatus", function ( linePercent, minPassingLinePercent )
 {
     if( linePercent === undefined )
     {
@@ -43,7 +43,7 @@ hbs.registerHelper( "commitStatus", function( linePercent, minPassingLinePercent
     return linePercent >= minPassingLinePercent ? "passing" : "failing";
 } );
 
-hbs.registerHelper( "fileStatus", function( linePercent, minPassingLinePercent )
+hbs.registerHelper( "fileStatus", function ( linePercent, minPassingLinePercent )
 {
     return linePercent === 100
         ? "passing"
@@ -52,36 +52,48 @@ hbs.registerHelper( "fileStatus", function( linePercent, minPassingLinePercent )
             : "";
 } );
 
+hbs.registerHelper( "commitPercentFormatted", function ( linePercent )
+{
+    return linePercent ? linePercent.toFixed( 0 ) + "%" : "";
+} );
+
+hbs.registerHelper( "linePercentFormatted", function ( linePercent )
+{
+    return linePercent ? linePercent.toFixed( 2 ) + "%" : "";
+} );
+
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + "/public/favicon.ico" ));
-app.use(logger( "dev" ));
-app.use(bodyParser.json({ limit: "5mb" }));
-app.use(bodyParser.urlencoded({ extended: false, limit: "5mb" }));
-app.use(multer({ inMemory: true }));
-app.use(cookieParser());
-app.use(require( "less-middleware" )(path.join(__dirname, "public" )));
-app.use(express.static(path.join(__dirname, "public" )));
+app.use( logger( "dev" ));
+app.use( bodyParser.json({ limit: "5mb" }));
+app.use( bodyParser.urlencoded({ extended: false, limit: "5mb" }));
+app.use( multer({ inMemory: true }));
+app.use( cookieParser());
+app.use( require( "less-middleware" )( path.join( __dirname, "public" )));
+app.use( express.static( path.join( __dirname, "public" )));
 
 // session
-app.use(session({
+app.use( session({
   secret: "adflkjaguadfnaadfjdfkKDJDFLSHsjkfh49584309dfjdfd"
 }));
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(flash());
+app.use( passport.initialize() );
+app.use( passport.session() );
+app.use( flash() );
 
 
 // routing
-app.use( "/", routes);
+app.use( "/", routes );
 
 
 // Passport session setup.
-passport.serializeUser(function(user, done) {
-  done(null, user);
+passport.serializeUser( function ( user, done )
+{
+  done( null, user );
 });
 
-passport.deserializeUser(function(obj, done) {
-  done(null, obj);
+passport.deserializeUser (function ( obj, done )
+{
+  done( null, obj );
 });
 
 passport.use(new GitHubStrategy({

@@ -9,6 +9,7 @@
 
         <h2>
             #{{ hash }}
+            <span class="badge {{commitStatus commit.linePercent repo.minPassingLinePercent }}">{{linePercentFormatted commit.linePercent }}</span>
             {{#if isPullRequest }}<span class="badge pr">Pull Request</span>{{/if}}
         </h2>
 

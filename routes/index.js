@@ -98,7 +98,6 @@ router.get( "/repos",
                             {
                                 var lastCoverage = activeRepo[ 0 ].commits[ activeRepo[ 0 ].commits.length - 1 ];
                                 userRepo.linePercent = lastCoverage.linePercent;
-                                userRepo.linePercentFormatted = lastCoverage.linePercent.toFixed( 0 );
                                 userRepo.minPassingLinePercent = activeRepo[ 0 ].minPassingLinePercent;
                             }
 
@@ -310,6 +309,7 @@ router.get( "/repo/:owner/:name/:hash?",
                         res.render( "commit", {
                             layout: "layout.html",
                             repo: repo,
+                            commit: repo.commits[ 0 ] || commit,
                             cov: cov,
                             hash: commit.hash,
                             isPullRequest: commit.isPullRequest,

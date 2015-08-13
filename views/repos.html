@@ -15,8 +15,8 @@
                     <span class="repo">{{ name }}</span>
 
                     <span class="badge">
-                        {{#if linePercentFormatted }}
-                            {{ linePercentFormatted }}%
+                        {{#if linePercent }}
+                            {{commitPercentFormatted linePercent }}
                         {{else}}
                             New
                         {{/if}}
@@ -31,7 +31,7 @@
         <ul class="repos">
         {{#each repos}}
             <li>
-                <a href="/repo/{{ fullName }}">                    
+                <a href="/repo/{{ fullName }}">
                     <span class="owner">{{ owner }}</span>
                     <span class="repo">{{ name }}</span>
                 </a>
