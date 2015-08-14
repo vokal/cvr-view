@@ -192,6 +192,24 @@ router.get( "/repo/:owner/:name/new-token",
     } );
 
 
+router.post( "/repo/:owner/:name/delete",
+    auth.ensureAuthenticated,
+    function ( req, res, next )
+    {
+        var onRemove = function ( err, repo )
+        {
+            if( err )
+            {
+                return next( err );
+            }
+
+            return res.redirect( "/repos" );
+        };
+
+        models.Repo.removeByOwnerAndName( req.params.owner, req.params.name, onRemove );
+    } );
+
+
 router.all( "/repo/:owner/:name/settings",
     auth.ensureAuthenticated,
     function ( req, res, next )

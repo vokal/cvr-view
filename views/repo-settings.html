@@ -9,27 +9,46 @@
 
         <br>
         <br>
-        <p>
-            <a href="/repo/{{ repo.owner }}/{{ repo.name }}/new-token"
-                onclick="return( confirm( 'Are you sure you want to reset the token?' ) )">
-                Generate new token
-            </a>
-        </p>
 
-         <form method="POST" action="">
-            <h2>Settings</h2>
+        <div class="highlight">
+             <form method="POST" action="">
+                <h2>Settings</h2>
+                <ul>
+                    <li>
+                        <label>
+                            Minimum Passing Line Percent Coverage
+                            <input type="text" name="minPassingLinePercent" value="{{ repo.minPassingLinePercent }}">
+                        </label>
+                    </li>
+                    <li>
+                        <input type="submit" class="btn-primary btn" value="Save Settings">
+                    </li>
+                </ul>
+            </form>
+        </div>
+
+        <div class="highlight">
+            <h2>Danger Zone</h2>
             <ul>
                 <li>
-                    <label>
-                        Minimum Passing Line Percent Coverage
-                        <input type="text" name="minPassingLinePercent" value="{{ repo.minPassingLinePercent }}">
-                    </label>
-                </li>
-                <li>
-                    <input type="submit" class="btn-primary btn" value="Save Settings">
+                    <a class="btn-warning btn" href="/repo/{{ repo.owner }}/{{ repo.name }}/new-token"
+                        onclick="return( confirm( 'Are you sure you want to reset the token?' ) )">
+                        Generate new token
+                    </a>
                 </li>
             </ul>
-        </form>
+
+            <form method="POST" action="/repo/{{ repo.owner }}/{{ repo.name }}/delete">
+                <ul>
+                    <li>
+                        <button type="submit" class="btn-danger btn"
+                            onclick="return( confirm( 'Are you sure you want to completely delete this repo?' ) )">
+                            Delete {{ repo.owner }}/{{ repo.name }} and all commit history
+                        </button>
+                    </li>
+                </ul>
+            </form>
+        </div>
 
     </div>
 </div>
