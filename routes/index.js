@@ -76,7 +76,7 @@ router.get( "/repos",
                     return r.fullName;
                 } );
 
-                models.Repo.findFullNameInArray( repoFullNames, 1, function ( err, activeRepos )
+                models.Repo.findFullNameInArray( repoFullNames, function ( err, activeRepos )
                 {
                     if( err )
                     {
@@ -188,7 +188,7 @@ router.get( "/repo/:owner/:name/new-token",
             }, next );
         };
 
-        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, 0, onRepo );
+        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
     } );
 
 
@@ -245,7 +245,7 @@ router.all( "/repo/:owner/:name/settings",
             return render();
         };
 
-        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, 0, onRepo );
+        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
     } );
 
 
@@ -280,14 +280,14 @@ router.get( "/repo/:owner/:name/:hash?",
                 }
             } );
 
-            var onHashList = function ( err, hashList )
+            var onHashList = function ( err, hashes )
             {
                 if( err )
                 {
                     return next( err );
                 }
 
-                if( !hashList || hashList.commits.length === 0 )
+                if( !hashes || hashes.length === 0 )
                 {
                     return res.render( "commit-activate", {
                         layout: "layout.html",
@@ -295,22 +295,14 @@ router.get( "/repo/:owner/:name/:hash?",
                         authed: true } );
                 }
 
-                var onCommit = function ( err, repoCommits )
+                var onCommit = function ( err, commit )
                 {
-                    if( err || !repoCommits.commits.length )
+                    if( err || !commit )
                     {
                         var commit404 = new Error( "Commit not found" );
                         commit404.status = 404;
                         return next( commit404 );
                     }
-
-                    var commit = repoCommits.commits[ 0 ];
-
-                    var hashes = hashList.commits.map( function ( c )
-                    {
-                        return { hash: c.hash, isPullRequest: c.isPullRequest };
-                    } );
-                    hashes.reverse();
 
                     var onCov = function ( err, cov )
                     {
@@ -351,7 +343,7 @@ router.get( "/repo/:owner/:name/:hash?",
             models.Repo.findCommitList( repo.owner, repo.name, onHashList );
         };
 
-        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, req.params.hash ? 0 : 1, onRepo );
+        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
     } );
 
 router.get( "/repo/:owner/:name/:hash/:file(*)",
@@ -435,7 +427,7 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
             models.Repo.findCommit( repo.owner, repo.name, req.params.hash, onCommit );
         };
 
-        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, 0, onRepo );
+        models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
     } );
 
 router.post( "/coverage", function ( req, res, next )
@@ -508,14 +500,12 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
             return callback( new Error( "Token is not registered" ) );
         }
 
-        var onCommit = function ( err, repoCommit )
+        var onCommit = function ( err, commit )
         {
             if( err )
             {
                 return callback( err );
             }
-
-            var commits = repoCommit.commits;
 
             cvr.getCoverage( coverage, coverageType, function ( err, cov )
             {
@@ -564,30 +554,31 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
 
                 var linePercent = cvr.getLineCoveragePercent( cov );
 
-                if( commits.length )
+                if( commit )
                 {
-                    commits[ 0 ].coverage = coverage;
-                    commits[ 0 ].linePercent = linePercent;
-                    repo.save( callback );
+                    commit.coverage = coverage;
+                    commit.linePercent = linePercent;
+                    commit.created = new Date();
+                    commit.save( callback );
                 }
                 else
                 {
                     var newCommit = {
+                        repo: {
+                            owner: repo.owner,
+                            name: repo.name,
+                            fullName: repo.fullName,
+                            provider: repo.provider
+                        },
                         hash: hash,
                         coverage: coverage,
                         linePercent: linePercent,
                         coverageType: coverageType,
-                        isPullRequest: !!options.isPullRequest
+                        isPullRequest: !!options.isPullRequest,
+                        created: new Date()
                     };
 
-                    models.Repo.pushCommit( repo._id, newCommit, function ( err )
-                    {
-                        if( err )
-                        {
-                            return callback( err );
-                        }
-                        repo.save( callback );
-                    } );
+                    models.Commit.pushCommit( newCommit, callback );
                 }
 
                 models.User.getTokenForRepoFullName( repo.fullName, onGotAccessToken );
@@ -599,11 +590,11 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
 
     if( options.token )
     {
-        models.Repo.findByToken( options.token, 0, onRepo );
+        models.Repo.findByToken( options.token, onRepo );
     }
     else
     {
-        models.Repo.findByOwnerAndName( options.owner, options.repo, 0, onRepo );
+        models.Repo.findByOwnerAndName( options.owner, options.repo, onRepo );
     }
 };
 

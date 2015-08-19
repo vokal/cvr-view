@@ -33,7 +33,9 @@
         "beforeOpeningRoundBrace": true
     },
     "requireSpacesInConditionalExpression": true,
-    "requireSpacesInsideBrackets": true,
+    "requireSpacesInsideBrackets": {
+        "allExcept": [ "(", ")", "{", "}", "[", "]", "function" ]
+    },
     "requireSpacesInsideParentheses": {
         "all": true,
         "except": [ "(", ")", "{", "}", "[", "]", "function" ]
