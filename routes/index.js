@@ -34,7 +34,6 @@ router.get( "/repos",
     {
         var username = req.session.user.profile.username;
 
-
         var onActiveRepos = function ( err, user, active )
         {
             if( err )
@@ -90,17 +89,12 @@ router.get( "/repos",
                         var activeRepo = activeRepos.filter( function ( activeRepo )
                         {
                             return activeRepo.fullName === userRepo.fullName;
-                        } );
+                        } )[ 0 ];
 
-                        if( activeRepo.length )
+                        if( activeRepo )
                         {
-                            if( activeRepo[ 0 ].commits && activeRepo[ 0 ].commits.length )
-                            {
-                                var lastCoverage = activeRepo[ 0 ].commits[ activeRepo[ 0 ].commits.length - 1 ];
-                                userRepo.linePercent = lastCoverage.linePercent;
-                                userRepo.minPassingLinePercent = activeRepo[ 0 ].minPassingLinePercent;
-                            }
-
+                            userRepo.minPassingLinePercent = activeRepo.minPassingLinePercent;
+                            userRepo.linePercent = activeRepo.lastLinePercent;
                             user.activeRepos.push( userRepo );
                         }
                     } );
