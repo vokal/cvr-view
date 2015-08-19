@@ -332,15 +332,15 @@ router.get( "/repo/:owner/:name/:hash?",
 
                 if( req.params.hash )
                 {
-                    models.Repo.findCommit( repo.owner, repo.name, req.params.hash, onCommit );
+                    models.Commit.findCommit( repo.owner, repo.name, req.params.hash, onCommit );
                 }
                 else
                 {
-                    onCommit( null, repo );
+                    models.Commit.findCommit( repo.owner, repo.name, hashes[ 0 ].hash, onCommit );
                 }
             };
 
-            models.Repo.findCommitList( repo.owner, repo.name, onHashList );
+            models.Commit.findCommitList( repo.owner, repo.name, onHashList );
         };
 
         models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
@@ -362,19 +362,17 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
                 return res.status( 404 );
             }
 
-            var onCommit = function ( err, repoCommit )
+            var onCommit = function ( err, commit )
             {
                 if( err )
                 {
                     return next( err );
                 }
 
-                if( repoCommit.commits.length === 0 )
+                if( !commit )
                 {
                     return res.status( 404 ).end();
                 }
-
-                var commit = repoCommit.commits[ 0 ];
 
                 var onCov = function ( err, cov )
                 {
@@ -397,6 +395,12 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
                                 var path404 = new Error( "The path " + req.params.file
                                     + " does not exist at commit " + req.params.hash
                                     + ". Is the path correctly based from the project root?" );
+                                path404.status = 404;
+                                return next( path404 );
+                            }
+                            if( errMessage.indexOf( "No commit found for the ref" ) > -1 )
+                            {
+                                var path404 = new Error( "The hash " + req.params.hash + " does not exist" );
                                 path404.status = 404;
                                 return next( path404 );
                             }
@@ -424,7 +428,7 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
                 cvr.getCoverage( commit.coverage, commit.coverageType, onCov );
             };
 
-            models.Repo.findCommit( repo.owner, repo.name, req.params.hash, onCommit );
+            models.Commit.findCommit( repo.owner, repo.name, req.params.hash, onCommit );
         };
 
         models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
@@ -563,7 +567,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                 }
                 else
                 {
-                    var newCommit = {
+                    var newCommit = new models.Commit({
                         repo: {
                             owner: repo.owner,
                             name: repo.name,
@@ -576,7 +580,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                         coverageType: coverageType,
                         isPullRequest: !!options.isPullRequest,
                         created: new Date()
-                    };
+                    });
 
                     models.Commit.pushCommit( newCommit, callback );
                 }
@@ -585,7 +589,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
             } );
         };
 
-        models.Repo.findCommit( repo.owner, repo.name, hash, onCommit );
+        models.Commit.findCommit( repo.owner, repo.name, hash, onCommit );
     };
 
     if( options.token )

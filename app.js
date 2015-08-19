@@ -96,15 +96,15 @@ passport.deserializeUser (function ( obj, done )
   done( null, obj );
 });
 
-passport.use(new GitHubStrategy({
+passport.use( new GitHubStrategy({
     clientID: process.env.GITHUB_CLIENTID || require( "./local-settings.json" ).gitHub.clientId,
     clientSecret: process.env.GITHUB_CLIENTSECRET || require( "./local-settings.json" ).gitHub.clientSecret,
     callbackURL: process.env.GITHUB_CALLBACKURL || require( "./local-settings.json" ).gitHub.callbackUrl,
-    scope: ["user:email", "repo"],
+    scope: [ "user:email", "repo" ],
     passReqToCallback: true
   },
-  function(req, accessToken, refreshToken, profile, done) {
-    process.nextTick( function()
+  function ( req, accessToken, refreshToken, profile, done ) {
+    process.nextTick( function ()
     {
       cvr.getGitHubOrgs( accessToken, function ( err, orgs )
       {
@@ -150,26 +150,29 @@ app.get( "/auth/github/success", function ( req, res )
   }
 } );
 
-app.get( "/logout", function( req, res )
+app.get( "/logout", function ( req, res )
 {
   req.logout();
   res.redirect( "/" );
 } );
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error( "Not Found" );
-  err.status = 404;
-  next(err);
+app.use( function ( req, res, next )
+{
+    var err = new Error( "Not Found" );
+    err.status = 404;
+    next( err );
 });
 
 // error handlers
 
 // development error handler
 // will print stacktrace
-if (app.get( "env" ) === "development" ) {
-  app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
+if ( app.get( "env" ) === "development" )
+{
+  app.use( function ( err, req, res, next )
+  {
+    res.status( err.status || 500 );
     res.render( "error", {
       message: err.message,
       error: err,
@@ -181,8 +184,9 @@ if (app.get( "env" ) === "development" ) {
 
 // production error handler
 // no stacktraces leaked to user
-app.use(function(err, req, res, next) {
-  res.status(err.status || 500);
+app.use( function ( err, req, res, next )
+{
+  res.status( err.status || 500 );
   res.render( "error", {
     message: err.message,
     error: {},
