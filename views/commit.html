@@ -1,5 +1,4 @@
 <div class="container">
-    <div class="row">
 
         <a href="/repo/{{ repo.owner }}/{{ repo.name }}/settings" class="btn-primary btn sync">
             Settings
@@ -8,7 +7,12 @@
         <h1>{{ repo.owner }}/{{ repo.name }}</h1>
 
         <h2>
-            #{{ hash }}
+            <span class="date">
+                {{age commit.created }}
+            </span>
+            <span class="hash">
+                #{{ hash }}
+            </span>
             <span class="badge {{commitStatus commit.linePercent repo.minPassingLinePercent }}">{{linePercentFormatted commit.linePercent }}</span>
             {{#if isPullRequest }}<span class="badge pr">Pull Request</span>{{/if}}
         </h2>
@@ -22,13 +26,15 @@
 
         <br>
         <br>
-        <p>
+        <p class="instructions">
             To post coverage <br>
 
             <code>
                 curl -F coverage=@coverage.info "https://cvr.vokal.io/coverage?token={{ repo.token }}&commit=:commit_hash&coveragetype=lcov|cobertura"
             </code>
         </p>
+
+        <div class="row">
 
         <table class="files">
             <colgroup>
@@ -42,8 +48,8 @@
                 <tr>
                     <th>File</th>
                     <th>Lines</th>
-                    <th>Functions</th>
-                    <th>Branches</th>
+                    <th class="mobile-hidden">Functions</th>
+                    <th class="mobile-hidden">Branches</th>
                 </tr>
             </thead>
 
@@ -61,13 +67,13 @@
                             <span class="den">{{ lines.found }}</span>
                         </span>
                     </td>
-                    <td>
+                    <td class="mobile-hidden">
                         <span class="fraction">
                             <span class="num">{{ functions.hit }}</span> /
                             <span class="den">{{ functions.found }}</span>
                         </span>
                     </td>
-                    <td>
+                    <td class="mobile-hidden">
                         {{#if branches.found}}
                         <span class="fraction">
                             <span class="num">{{ branches.hit }}</span> /

@@ -1,5 +1,4 @@
 <div class="container">
-    <div class="row">
 
         <a href="/repos?refresh=1" class="btn-primary btn sync">
             Sync Repos
@@ -7,6 +6,7 @@
 
         <h1>{{title}}</h1>
 
+    <div class="row">
         <ul class="repos">
         {{#each activeRepos}}
             <li class="{{commitStatus linePercent minPassingLinePercent }}">
