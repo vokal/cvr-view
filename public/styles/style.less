@@ -65,7 +65,8 @@ table {
 
 
 li.complete,
-li.passing {
+li.passing,
+tr.passing td {
     background-color: #DFD;
 
     .badge {
@@ -149,4 +150,42 @@ form {
     background: #F8F8F8;
     padding: 10px;
     margin-bottom: 20px;
+}
+
+h1 {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+h2 .hash {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+    vertical-align: middle;
+}
+
+h2 .date {
+    opacity: 0.7;
+    display: block;
+}
+
+select {
+    max-width: 100%;
+    font-size: 14px;
+    padding: 4px;
+}
+
+@media all and ( max-width: 600px ){
+    .instructions {
+        display: none;
+    }
+
+    .mobile-hidden {
+        display: none;
+    }
 }

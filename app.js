@@ -13,6 +13,7 @@ var GitHubStrategy = require( "passport-github" ).Strategy;
 var session = require( "express-session" );
 var flash = require( "connect-flash" );
 var cvr = require( "cvr" );
+var moment = require( "moment" );
 
 var routes = require( "./routes/index" );
 
@@ -60,6 +61,11 @@ hbs.registerHelper( "commitPercentFormatted", function ( linePercent )
 hbs.registerHelper( "linePercentFormatted", function ( linePercent )
 {
     return linePercent ? linePercent.toFixed( 2 ) + "%" : "";
+} );
+
+hbs.registerHelper( "age", function ( date )
+{
+    return moment( date ).fromNow();
 } );
 
 // uncomment after placing your favicon in /public

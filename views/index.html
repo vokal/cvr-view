@@ -12,20 +12,18 @@
             {{/if}}
 
         </div>
+    </div>
 
 
-        <h2>
-            Use
-        </h2>
-
-
+    <h2>
+        Use
+    </h2>
         <h3>curl</h3>
-
-<pre>
-<code>
-curl -F coverage=@coverage.info "https://cvr.vokal.io/coverage?token=:TOKEN&commit=:COMMIT_HASH&coveragetype=:COVERAGE_TYPE&removepath=:REMOVE_PATH"
-</code>
-</pre>
+    <pre>
+    <code>
+    curl -F coverage=@coverage.info "https://cvr.vokal.io/coverage?token=:TOKEN&commit=:COMMIT_HASH&coveragetype=:COVERAGE_TYPE&removepath=:REMOVE_PATH"
+    </code>
+    </pre>
 
         <h3>Details</h3>
         <ul class="list-group">
@@ -117,5 +115,4 @@ curl -F coverage=@"${LCOV_OUTPUT}" "${URL}"
 </code>
 </pre>
 
-    </div>
 </div>
