@@ -68,6 +68,27 @@ hbs.registerHelper( "age", function ( date )
     return moment( date ).fromNow();
 } );
 
+hbs.registerHelper( "pathFormat", function ( path )
+{
+    return path.replace( /\//g, " / " );
+});
+
+hbs.registerHelper( "trimPathFormat", function ( path )
+{
+    var parts = path.split( "/" );
+    var trimParts = parts.slice( -3 );
+    trimParts = trimParts.map( function ( part )
+    {
+        if( part.length > 30 )
+        {
+            return part.slice( 0, 14 ) + "..." + part.slice( -14 );
+        }
+        return part;
+    });
+
+    return ( parts.length > trimParts.length ? "... / " : "" ) + trimParts.join( " / " );
+});
+
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + "/public/favicon.ico" ));
 app.use( logger( "dev" ));
