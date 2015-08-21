@@ -77,6 +77,15 @@ hbs.registerHelper( "trimPathFormat", function ( path )
 {
     var parts = path.split( "/" );
     var trimParts = parts.slice( -3 );
+    trimParts = trimParts.map( function ( part )
+    {
+        if( part.length > 30 )
+        {
+            return part.slice( 0, 14 ) + "..." + part.slice( -14 );
+        }
+        return part;
+    });
+
     return ( parts.length > trimParts.length ? "... / " : "" ) + trimParts.join( " / " );
 });
 
