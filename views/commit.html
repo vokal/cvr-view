@@ -57,8 +57,9 @@
             {{#each cov}}
                 <tr class="{{fileStatus linePercent ../repo.minPassingLinePercent}}">
                     <td>
-                        <a href="/repo/{{ ../repo.owner }}/{{ ../repo.name }}/{{ ../hash }}/{{ file }}">
-                            {{ file }}
+                        <a href="/repo/{{ ../repo.owner }}/{{ ../repo.name }}/{{ ../hash }}/{{ file }}"
+                            title="{{ file }}">
+                            {{trimPathFormat file }}
                         </a>
                     </td>
                     <td>
