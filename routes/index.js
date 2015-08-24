@@ -559,13 +559,6 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                     commit.linePercent = linePercent;
                     commit.created = new Date();
                     commit.save( callback );
-                    repo.save( function ( err )
-                    {
-                        if( err )
-                        {
-                            console.log( err );
-                        }
-                    });
                 }
                 else
                 {
@@ -585,14 +578,15 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                     });
 
                     models.Commit.pushCommit( newCommit, callback );
-                    repo.save( function ( err )
-                    {
-                        if( err )
-                        {
-                            console.log( err );
-                        }
-                    });
                 }
+
+                repo.save( function ( err )
+                {
+                    if( err )
+                    {
+                        console.log( err );
+                    }
+                });
 
                 models.User.getTokenForRepoFullName( repo.fullName, onGotAccessToken );
             } );
