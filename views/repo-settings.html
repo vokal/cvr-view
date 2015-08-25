@@ -28,6 +28,25 @@
         </div>
 
         <div class="highlight">
+
+            <h2>
+                <a href="/repo/{{ repo.owner }}/{{ repo.name }}" style="float: right;">
+                    <img src="/{{ repo.owner }}/{{ repo.name }}/shield.svg">
+                </a>
+                Status Shield
+            </h2>
+
+            <ul>
+                <li>
+                    Markdown<br>
+                    <code>
+                        [![line cvr]({{ host }}{{ repo.owner }}/{{ repo.name }}/shield.svg)]({{ host }}{{ repo.owner }}/{{ repo.name }})
+                    </code>
+                </li>
+            </ul>
+        </div>
+
+        <div class="highlight">
             <h2>Danger Zone</h2>
             <ul>
                 <li>

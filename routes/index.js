@@ -28,6 +28,31 @@ router.get( "/", function ( req, res, next )
         authed: req.isAuthenticated() });
 } );
 
+router.get( "/:owner/:name/shield.svg", function ( req, res, next )
+{
+    res.type( "image/svg+xml" );
+
+    var onRepo = function ( err, repo )
+    {
+        if( !repo || err )
+        {
+            return res.status( 404 ).end();
+        }
+
+        cvr.getShield( repo.lastLinePercent, repo.minPassingLinePercent, function ( err, svg )
+        {
+            if( err )
+            {
+                return res.status( 500 ).end();
+            }
+
+            return res.send( svg );
+        });
+    };
+
+    models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
+});
+
 router.get( "/repos",
     auth.ensureAuthenticated,
     function ( req, res, next )
@@ -220,6 +245,7 @@ router.all( "/repo/:owner/:name/settings",
                 res.render( "repo-settings", {
                     layout: "layout.html",
                     repo: repo,
+                    host: host,
                     authed: true } );
             };
 
