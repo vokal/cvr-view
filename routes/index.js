@@ -43,7 +43,8 @@ router.get( "/:owner/:name/shield.svg", function ( req, res, next )
         {
             if( err )
             {
-                return res.status( 500 ).end();
+                console.log( err );
+                return res.status( 503 ).end();
             }
 
             return res.send( svg );
