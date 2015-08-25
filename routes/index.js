@@ -28,6 +28,32 @@ router.get( "/", function ( req, res, next )
         authed: req.isAuthenticated() });
 } );
 
+router.get( "/:owner/:name/shield.svg", function ( req, res, next )
+{
+    res.type( "image/svg+xml" );
+
+    var onRepo = function ( err, repo )
+    {
+        if( !repo || err )
+        {
+            return res.status( 404 ).end();
+        }
+
+        cvr.getShield( repo.lastLinePercent, repo.minPassingLinePercent, function ( err, svg )
+        {
+            if( err )
+            {
+                console.log( err );
+                return res.status( 503 ).end();
+            }
+
+            return res.send( svg );
+        });
+    };
+
+    models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
+});
+
 router.get( "/repos",
     auth.ensureAuthenticated,
     function ( req, res, next )
@@ -220,6 +246,7 @@ router.all( "/repo/:owner/:name/settings",
                 res.render( "repo-settings", {
                     layout: "layout.html",
                     repo: repo,
+                    host: host,
                     authed: true } );
             };
 
@@ -559,13 +586,6 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                     commit.linePercent = linePercent;
                     commit.created = new Date();
                     commit.save( callback );
-                    repo.save( function ( err )
-                    {
-                        if( err )
-                        {
-                            console.log( err );
-                        }
-                    });
                 }
                 else
                 {
@@ -585,14 +605,15 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                     });
 
                     models.Commit.pushCommit( newCommit, callback );
-                    repo.save( function ( err )
-                    {
-                        if( err )
-                        {
-                            console.log( err );
-                        }
-                    });
                 }
+
+                repo.save( function ( err )
+                {
+                    if( err )
+                    {
+                        console.log( err );
+                    }
+                });
 
                 models.User.getTokenForRepoFullName( repo.fullName, onGotAccessToken );
             } );
