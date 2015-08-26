@@ -646,7 +646,7 @@ router.post( "/webhook", function ( req, res, next )
 
     var pr = req.body.pull_request;
 
-    if( !pr )
+    if( !pr || req.body.action === "closed" )
     {
         return res.status( 202 ).send( "Not a Pull Request" ).end();
     }
