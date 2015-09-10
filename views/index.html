@@ -3,7 +3,7 @@
 
         <div class="jumbotron">
             <h1>CVR</h1>
-            <p>View line-by-line coverage reports by posting code coverage in LCOV, Cobertura, or Jacoco.</p>
+            <p>View line-by-line coverage reports by posting code coverage in LCOV, Cobertura, Jacoco, or Go Cover.</p>
 
             {{#if authed}}
                 <p><a href="/repos">Browse repos</a> to view coverage or get a token to post coverage.</p>
@@ -48,7 +48,7 @@
                 The git commit hash. In bash you can get this like <code>COMMIT_HASH="$(git rev-parse HEAD)"</code>
             </li>
             <li class="list-group-item">
-                <strong>coveragetype</strong> (optional, lcov|cobertura|jacoco, default is lcov)<br>
+                <strong>coveragetype</strong> (optional, lcov|cobertura|jacoco|gocover, default is lcov)<br>
                 The type of coverage being sent
             </li>
             <li class="list-group-item">
