@@ -493,7 +493,7 @@ router.post( "/coverage", function ( req, res, next )
 
 var saveCoverage = function ( hash, coverage, coverageType, options, callback )
 {
-    if( [ "lcov", "cobertura", "jacoco" ].indexOf( coverageType ) === -1 )
+    if( [ "lcov", "cobertura", "jacoco", "gocover" ].indexOf( coverageType ) === -1 )
     {
         return callback( new Error( "Coverage Type not valid" ) );
     }
