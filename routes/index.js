@@ -652,7 +652,7 @@ router.post( "/webhook", function ( req, res, next )
     }
 
     var title = req.body.pull_request.title;
-    console.log('ci skip');
+    
     if( title.indexOf( "[ci skip]" ) >= 0 || title.indexOf( "[skip ci]" ) >= 0 )
     {
         return res.status( 202 ).send( "Commit skipped by user, pending status not set" ).end();
