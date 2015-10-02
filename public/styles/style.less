@@ -1,14 +1,74 @@
 @import (inline) "prism.css";
+@import (inline) "animate.css";
 @import "prism-custom.less";
 
 
 @badge-passing: #070;
 @badge-failing: #700;
-
+@light-batter: #ffe1a0;
+@dark-batter: #ebb460;
+@butter: #fde860;
+@syrup: #7f4a46;
 
 body {
     padding-top: 70px;
     font-family: "Source Sans Pro", sans-serif;
+}
+
+.navbar-default {
+    background: @butter;
+    border-color: @light-batter;
+
+    .navbar-brand {
+        color: @syrup;
+
+        &:hover {
+            color: #000;
+        }
+    }
+}
+
+.jumbotron {
+    background-color: @syrup;
+    color: #FFF;
+    margin-top: -20px;
+    border-radius: 0 !important;
+    text-align: center;
+
+    h1 {
+        font-size: 12rem;
+        line-height: 1;
+        margin-top: 0;
+        font-weight: bold;
+    }
+
+    h2 {
+        font-size: 3rem;
+    }
+
+    p {
+        font-size: 2rem;
+    }
+
+    .btn {
+        background-color: @butter;
+        color: @syrup;
+        border: @light-batter;
+    }
+
+    a {
+        color: @butter;
+    }
+}
+
+.navbar-logo {
+    background: url( "/images/pancake.png" ) no-repeat left center;
+    background-size: contain;
+    display: block;
+    height: 40px;
+    line-height: 40px;
+    padding: 0 0 0 40px;
+    margin: 5px 20px 5px 0;
 }
 
 .repos {
