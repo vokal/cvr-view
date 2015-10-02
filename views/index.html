@@ -1,19 +1,25 @@
-<div class="container">
+<div class="container-fluid">
     <div class="row">
 
         <div class="jumbotron">
-            <h1>CVR</h1>
-            <p>View line-by-line coverage reports by posting code coverage in LCOV, Cobertura, Jacoco, or Go Cover.</p>
+            <img src="/images/pancake.png" style="max-width: 128px;" class="animated flipInY">
+            <h1 class="animated fadeInUp">CVR</h1>
 
-            {{#if authed}}
-                <p><a href="/repos">Browse repos</a> to view coverage or get a token to post coverage.</p>
-            {{else}}<p><a class="btn btn-primary btn-lg" href="/auth/github">
-                Log in with GitHub</a></p>
-            {{/if}}
+            <div class="animated fadeIn">
+                <h2>Get code coverage reports from your LCOV, Cobertura, Jacoco, or Go Cover results.</h2>
+
+                {{#if authed}}
+                    <p><a href="/repos">Browse repos</a> to view coverage or get a token to post coverage.</p>
+                {{else}}<p><a class="btn btn-primary btn-lg" href="/auth/github">
+                    Log in with GitHub</a></p>
+                {{/if}}
+            </div>
 
         </div>
     </div>
+</div>
 
+<div class="container">
 
     <h2>
         Use
