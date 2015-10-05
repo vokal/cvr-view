@@ -16,15 +16,31 @@ body {
 }
 
 .navbar-default {
-    background: @butter;
-    border-color: @light-batter;
+    background: @syrup;
+    border: none;
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
 
     .navbar-brand {
-        color: @syrup;
+        margin-left: 10px;
+    }
+
+    .navbar-brand,
+    .navbar-right > li > a {
+        color: #FFF;
+        font-size: 18px;
 
         &:hover {
-            color: #000;
+            color: @butter;
         }
+    }
+
+    .navbar-toggle .icon-bar {
+        background-color: #FFF;
+    }
+
+    .navbar-toggle:focus,
+    .navbar-toggle:hover {
+        background-color: rgba(0,0,0,0.2); 
     }
 }
 
@@ -40,10 +56,14 @@ body {
         line-height: 1;
         margin-top: 0;
         font-weight: bold;
+        margin-bottom: -18px;
     }
 
     h2 {
         font-size: 3rem;
+        line-height: 1.3;
+        margin-top: 20px;
+        margin-bottom: 20px;
     }
 
     p {
@@ -62,12 +82,12 @@ body {
 }
 
 .navbar-logo {
-    background: url( "/images/pancake.png" ) no-repeat left center;
+    background: url( "/images/logo-pancakes.svg" ) no-repeat left center;
     background-size: contain;
     display: block;
     height: 40px;
     line-height: 40px;
-    padding: 0 0 0 40px;
+    padding: 0 0 0 50px;
     margin: 5px 20px 5px 0;
 }
 
