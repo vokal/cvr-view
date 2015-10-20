@@ -5,6 +5,7 @@ var router = express.Router();
 var cvr = require( "cvr" );
 var mongoose = require( "mongoose" );
 var uuid = require( "uuid-lib" );
+var path = require( "path" );
 
 var auth = require( "../lib/auth" );
 var models = require( "../lib/models" );
@@ -53,6 +54,12 @@ router.get( "/:owner/:name/shield.svg", function ( req, res, next )
 
     models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
 });
+
+router.get( "/upload", function( req, res, next )
+{
+    res.set("Content-Type", "text/plain");
+    res.sendFile(path.normalize(__dirname + "/../views/upload.sh"));
+} );
 
 router.get( "/repos",
     auth.ensureAuthenticated,

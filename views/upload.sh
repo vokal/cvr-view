@@ -1,0 +1,115 @@
+#!/bin/bash
+
+COVERAGE_URL="https://cvr.vokal.io/coverage"
+GIT_HASH=$(git rev-parse HEAD)
+COVERAGE_TYPE=""
+COVERAGE_FILE=""
+
+get_coverage_type() {
+    grep cobertura $1 1> /dev/null
+
+    if [ $? == 0 ]; then
+        COVERAGE_TYPE="cobertura"
+        return 0
+    fi
+
+    if [ ${1: -5} == ".info" ]; then
+        COVERAGE_TYPE="lcov"
+        return 0
+    fi
+
+    grep "\.go" $1 1> /dev/null
+
+    if [ $? == 0 ]; then
+        COVERAGE_TYPE="gocover"
+        return 0
+    fi
+
+    return 1
+}
+
+FILES=$(find "." -type f \( -name '*coverage.*' \
+                 -or -name 'nosetests.xml' \
+                 -or -name 'jacoco*.xml' \
+                 -or -name 'clover.xml' \
+                 -or -name 'report.xml' \
+                 -or -name 'cobertura.xml' \
+                 -or -name 'luacov.report.out' \
+                 -or -name 'lcov.info' \
+                 -or -name '*.lcov' \
+                 -or -name 'gcov.info' \
+                 -or -name '*.gcov' \
+                 -or -name '*.lst' \) \
+                -not -name '*.sh' \
+                -not -name '*.data' \
+                -not -name '*.py' \
+                -not -name '*.class' \
+                -not -name '*.xcconfig' \
+                -not -name 'Coverage.profdata' \
+                -not -name 'phpunit-code-coverage.xml' \
+                -not -name 'coverage.serialized' \
+                -not -name '*.pyc' \
+                -not -name '*.cfg' \
+                -not -name '*.egg' \
+                -not -name '*.whl' \
+                -not -name '*.html' \
+                -not -name '*.js' \
+                -not -name '*.cpp' \
+                -not -name 'coverage.jade' \
+                -not -name 'include.lst' \
+                -not -name 'inputFiles.lst' \
+                -not -name 'createdFiles.lst' \
+                -not -name 'coverage.html' \
+                -not -name 'scoverage.measurements.*' \
+                -not -name 'test_*_coverage.txt' \
+                -not -path '*/vendor/*' \
+                -not -path '*/htmlcov/*' \
+                -not -path '*/home/cainus/*' \
+                -not -path '*/virtualenv/*' \
+                -not -path '*/js/generated/coverage/*' \
+                -not -path '*/.virtualenv/*' \
+                -not -path '*/virtualenvs/*' \
+                -not -path '*/.virtualenvs/*' \
+                -not -path '*/.env/*' \
+                -not -path '*/.envs/*' \
+                -not -path '*/env/*' \
+                -not -path '*/envs/*' \
+                -not -path '*/.venv/*' \
+                -not -path '*/.venvs/*' \
+                -not -path '*/venv/*' \
+                -not -path '*/venvs/*' \
+                -not -path '*/.git/*' \
+                -not -path '*/.hg/*' \
+                -not -path '*/.tox/*' \
+                -not -path '*/__pycache__/*' \
+                -not -path '*/.egg-info*' \
+                -not -path "*/$bower_components/*" \
+                -not -path '*/node_modules/*' \
+                -not -path '*/conftest_*.c.gcov')
+
+for f in $FILES
+do
+    # Check for a valid type of coverage before uploading
+    get_coverage_type $f
+
+    if [ $? == 0 ]; then
+        COVERAGE_FILE=$f
+        break
+    fi
+done
+
+# COVERAGE_FILE should be set at this point
+if [ "$COVERAGE_FILE" == "" ]; then
+    echo "Error while detecting the proper coverage file"
+    exit 1;
+fi
+
+echo "$COVERAGE_TYPE file found"
+
+echo "Uploading $COVERAGE_FILE to cvr..."
+
+result=$(curl -sF \
+    coverage=@$COVERAGE_FILE \
+    "$COVERAGE_URL?token=$CVR_TOKEN&commit=$GIT_HASH&coveragetype=$COVERAGE_TYPE")
+
+echo "Done!"
