@@ -96,7 +96,7 @@ for f in ${FILES}; do
     get_coverage_type "${f}"
 
     if [ $? == 0 ]; then
-        COVERAGE_FILE=${f}
+        COVERAGE_FILE="${f}"
         break
     fi
 done
