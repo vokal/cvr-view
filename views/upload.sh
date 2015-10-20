@@ -7,7 +7,7 @@ COVERAGE_FILE=""
 
 # This is a naive hack. There are many like it but this one is mine.
 get_coverage_type() {
-    grep cobertura $1 1> /dev/null
+    grep -q cobertura $1
 
     if [ $? == 0 ]; then
         COVERAGE_TYPE="cobertura"
@@ -19,7 +19,7 @@ get_coverage_type() {
         return 0
     fi
 
-    grep "\.go" $1 1> /dev/null
+    grep -q "\.go" $1
 
     if [ $? == 0 ]; then
         COVERAGE_TYPE="gocover"
