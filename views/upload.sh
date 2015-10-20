@@ -90,13 +90,12 @@ FILES=$(find "." -type f \( -name '*coverage.*' \
                 -not -path '*/node_modules/*' \
                 -not -path '*/conftest_*.c.gcov')
 
-for f in ${FILES}
-do
+for f in ${FILES}; do
     # Check for a valid type of coverage before uploading
-    get_coverage_type $f
+    get_coverage_type "${f}"
 
     if [ $? == 0 ]; then
-        COVERAGE_FILE=$f
+        COVERAGE_FILE=${f}
         break
     fi
 done
