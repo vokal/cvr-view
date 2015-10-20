@@ -5,6 +5,7 @@ GIT_HASH=$(git rev-parse HEAD)
 COVERAGE_TYPE=""
 COVERAGE_FILE=""
 
+# This is a naive hack. There are many like it but this one is mine.
 get_coverage_type() {
     grep cobertura $1 1> /dev/null
 
@@ -25,9 +26,11 @@ get_coverage_type() {
         return 0
     fi
 
+    # TODO: jacoco
     return 1
 }
 
+# Find candidate coverage files within the project directory
 FILES=$(find "." -type f \( -name '*coverage.*' \
                  -or -name 'nosetests.xml' \
                  -or -name 'jacoco*.xml' \
@@ -83,11 +86,11 @@ FILES=$(find "." -type f \( -name '*coverage.*' \
                 -not -path '*/.tox/*' \
                 -not -path '*/__pycache__/*' \
                 -not -path '*/.egg-info*' \
-                -not -path "*/$bower_components/*" \
+                -not -path "*/bower_components/*" \
                 -not -path '*/node_modules/*' \
                 -not -path '*/conftest_*.c.gcov')
 
-for f in $FILES
+for f in ${FILES}
 do
     # Check for a valid type of coverage before uploading
     get_coverage_type $f
@@ -99,17 +102,25 @@ do
 done
 
 # COVERAGE_FILE should be set at this point
-if [ "$COVERAGE_FILE" == "" ]; then
+if [ "${COVERAGE_FILE}" == "" ]; then
     echo "Error while detecting the proper coverage file"
     exit 1;
 fi
 
-echo "$COVERAGE_TYPE file found"
+echo "${COVERAGE_TYPE} file found"
 
-echo "Uploading $COVERAGE_FILE to cvr..."
+echo "Uploading ${COVERAGE_FILE} to cvr..."
 
-result=$(curl -sF \
-    coverage=@$COVERAGE_FILE \
-    "$COVERAGE_URL?token=$CVR_TOKEN&commit=$GIT_HASH&coveragetype=$COVERAGE_TYPE")
+curl -sF \
+    coverage=@${COVERAGE_FILE} \
+    "${COVERAGE_URL}?token=${CVR_TOKEN}&commit=${GIT_HASH}&coveragetype=${COVERAGE_TYPE}"
+
+RESULT=$?
+if [ ${RESULT} -ne 0 ]; then
+    echo "Error uploading coverage file to cvr"
+    exit ${RESULT}
+fi
 
 echo "Done!"
+
+exit 0
