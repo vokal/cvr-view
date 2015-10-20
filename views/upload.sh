@@ -111,8 +111,8 @@ echo "${COVERAGE_TYPE} file found"
 
 echo "Uploading ${COVERAGE_FILE} to cvr..."
 
-curl -sF \
-    coverage=@${COVERAGE_FILE} \
+curl --silent \
+    --form coverage=@${COVERAGE_FILE} \
     "${COVERAGE_URL}?token=${CVR_TOKEN}&commit=${GIT_HASH}&coveragetype=${COVERAGE_TYPE}"
 
 RESULT=$?
