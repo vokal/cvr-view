@@ -57,8 +57,8 @@ router.get( "/:owner/:name/shield.svg", function ( req, res, next )
 
 router.get( "/upload", function( req, res, next )
 {
-    res.set("Content-Type", "text/plain");
-    res.sendFile(path.normalize(__dirname + "/../views/upload.sh"));
+    res.set( "Content-Type", "text/plain" );
+    res.sendFile( path.normalize( __dirname + "/../views/upload.sh" ) );
 } );
 
 router.get( "/repos",
