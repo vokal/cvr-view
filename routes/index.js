@@ -54,6 +54,15 @@ router.get( "/:owner/:name/shield.svg", function ( req, res, next )
     models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
 });
 
+router.get( "/upload", function( req, res, next )
+{
+    res.set( "Content-Type", "text/plain" );
+    res.render( "upload", {
+        proto: req.protocol,
+        host: req.hostname
+    } )
+} );
+
 router.get( "/repos",
     auth.ensureAuthenticated,
     function ( req, res, next )
