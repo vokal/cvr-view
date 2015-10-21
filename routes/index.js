@@ -5,7 +5,6 @@ var router = express.Router();
 var cvr = require( "cvr" );
 var mongoose = require( "mongoose" );
 var uuid = require( "uuid-lib" );
-var path = require( "path" );
 
 var auth = require( "../lib/auth" );
 var models = require( "../lib/models" );
