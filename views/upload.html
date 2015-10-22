@@ -31,8 +31,8 @@ get_coverage_type() {
 }
 
 # Find candidate coverage files within the project directory
-FILES=$(find "." -type f 
-    \(
+FILES=$(find "." -type f \
+    \( \
         -name '*coverage.*' \
         -or -name 'nosetests.xml' \
         -or -name 'jacoco*.xml' \
@@ -45,7 +45,7 @@ FILES=$(find "." -type f
         -or -name 'gcov.info' \
         -or -name '*.gcov' \
         -or -name '*.lst' \
-        \) \
+     \) \
     -not -name '*.sh' \
     -not -name '*.data' \
     -not -name '*.py' \
