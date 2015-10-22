@@ -118,6 +118,7 @@ curl --silent \
     --location \
     --show-error \
     --form coverage=@${COVERAGE_FILE} \
+    -XPOST \
     "${COVERAGE_URL}?token=${CVR_TOKEN}&commit=${GIT_HASH}&coveragetype=${COVERAGE_TYPE}"
 
 RESULT=$?
