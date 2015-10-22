@@ -54,6 +54,15 @@ router.get( "/:owner/:name/shield.svg", function ( req, res, next )
     models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
 });
 
+router.get( "/upload", function( req, res, next )
+{
+    res.set( "Content-Type", "text/plain" );
+    res.render( "upload", {
+        proto: req.protocol,
+        host: req.hostname
+    } )
+} );
+
 router.get( "/repos",
     auth.ensureAuthenticated,
     function ( req, res, next )
@@ -649,6 +658,13 @@ router.post( "/webhook", function ( req, res, next )
     if( !pr || [ "opened", "synchronize" ].indexOf( req.body.action ) === -1 )
     {
         return res.status( 202 ).send( "Not a Pull Request" ).end();
+    }
+
+    var title = req.body.pull_request.title;
+    
+    if( title.indexOf( "[ci skip]" ) >= 0 || title.indexOf( "[skip ci]" ) >= 0 )
+    {
+        return res.status( 202 ).send( "Commit skipped by user, pending status not set" ).end();
     }
 
     var onGotAccessToken = function ( err, tokenRes )
