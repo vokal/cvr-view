@@ -515,16 +515,6 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
         return callback( new Error( "Coverage is empty" ) );
     }
 
-    if( options.removePath )
-    {
-        coverage = cvr.removePath( coverage, options.removePath );
-    }
-
-    if( options.prependPath )
-    {
-        coverage = cvr.prependPath( coverage, options.prependPath, coverageType );
-    }
-
     var onRepo = function ( err, repo )
     {
         if( err )
@@ -535,6 +525,16 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
         if( !repo )
         {
             return callback( new Error( "Token is not registered" ) );
+        }
+
+        if( options.removePath )
+        {
+            coverage = cvr.removePath( coverage, options.removePath );
+        }
+
+        if( options.prependPath )
+        {
+            coverage = cvr.prependPath( coverage, options.prependPath, coverageType );
         }
 
         // query param options take precedence over saved settings
