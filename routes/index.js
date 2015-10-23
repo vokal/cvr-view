@@ -596,7 +596,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                                 var changeDiff = linePercent > hashes[ 0 ].linePercent ? "+" : "";
                                 var covDiff = linePercent - hashes[ 0 ].linePercent;
 
-                                newDescription += changeDiff + covDiff.toFixed( 2 ) + "% change.";
+                                newDescription += " " + changeDiff + covDiff.toFixed( 2 ) + "% change.";
                             }
                             else
                             {
