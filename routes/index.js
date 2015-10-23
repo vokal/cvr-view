@@ -20,8 +20,8 @@ db.once( "open", function ( callback ) {
   // yay!
 });
 
-var lcov_fn_match = "^FN:[0-9]\\{1,\\},([a-zA-Z0-9_]\\{1,\\})$"
-var gocover_match = "^[a-zA-Z/]\\{1,\\}\\.go:[0-9]\\{1,\\}\\.[0-9]\\{1,\\},[0-9]\\{1,\\}\\.[0-9]\\{1,\\} [0-9]\\{1,\\} [0-9]\\{1,\\}$"
+var lcovFnMatch = "^FN:[0-9]\\{1,\\},([a-zA-Z0-9_]\\{1,\\})$"
+var gocoverMatch = "^[a-zA-Z/]\\{1,\\}\\.go:[0-9]\\{1,\\}\\.[0-9]\\{1,\\},[0-9]\\{1,\\}\\.[0-9]\\{1,\\} [0-9]\\{1,\\} [0-9]\\{1,\\}$"
 
 router.get( "/", function ( req, res, next )
 {
@@ -61,8 +61,8 @@ router.get( "/upload", function( req, res, next )
 {
     res.set( "Content-Type", "text/plain" );
     res.render( "upload", {
-        lcov_regex: lcov_fn_match,
-        gocov_regex: gocover_match,
+        lcov_regex: lcovFnMatch,
+        gocov_regex: gocoverMatch,
         proto: req.protocol,
         host: req.hostname
     } )
