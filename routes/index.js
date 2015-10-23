@@ -262,6 +262,9 @@ router.all( "/repo/:owner/:name/settings",
             if( req.body.minPassingLinePercent !== undefined )
             {
                 repo.minPassingLinePercent = req.body.minPassingLinePercent;
+                repo.removePath = req.body.removePath;
+                repo.prependPath = req.body.prependPath;
+
                 repo.save( function ( err )
                 {
                     if( err )
@@ -512,16 +515,6 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
         return callback( new Error( "Coverage is empty" ) );
     }
 
-    if( options.removePath )
-    {
-        coverage = cvr.removePath( coverage, options.removePath );
-    }
-
-    if( options.prependPath )
-    {
-        coverage = cvr.prependPath( coverage, options.prependPath, coverageType );
-    }
-
     var onRepo = function ( err, repo )
     {
         if( err )
@@ -532,6 +525,25 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
         if( !repo )
         {
             return callback( new Error( "Token is not registered" ) );
+        }
+
+        // query param options take precedence over saved settings
+        if( options.removePath )
+        {
+            coverage = cvr.removePath( coverage, options.removePath );
+        }
+        else if( repo.removePath )
+        {
+            coverage = cvr.removePath( coverage, repo.removePath );
+        } 
+
+        if( options.prependPath )
+        {
+            coverage = cvr.prependPath( coverage, options.prependPath, coverageType );
+        } 
+        else if( repo.prependPath )
+        {
+            coverage = cvr.prependPath( coverage, repo.prependPath, coverageType );
         }
 
         var onCommit = function ( err, commit )
