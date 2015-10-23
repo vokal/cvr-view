@@ -4,7 +4,7 @@ var express = require( "express" );
 var router = express.Router();
 var cvr = require( "cvr" );
 var mongoose = require( "mongoose" );
-var uuid = require( "node-lib" );
+var uuid = require( "node-uuid" );
 
 var auth = require( "../lib/auth" );
 var models = require( "../lib/models" );
