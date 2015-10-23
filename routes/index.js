@@ -4,7 +4,7 @@ var express = require( "express" );
 var router = express.Router();
 var cvr = require( "cvr" );
 var mongoose = require( "mongoose" );
-var uuid = require( "uuid-lib" );
+var uuid = require( "node-lib" );
 
 var auth = require( "../lib/auth" );
 var models = require( "../lib/models" );
@@ -201,7 +201,7 @@ router.get( "/repo/:owner/:name/new-token",
                 return next( err );
             }
 
-            repo.token = uuid.raw();
+            repo.token = uuid.v4();
             repo.save( function ()
             {
                 return res.redirect( "/repo/" + req.params.owner + "/" + req.params.name );
@@ -288,7 +288,7 @@ router.get( "/repo/:owner/:name/:hash?",
                     owner: req.params.owner,
                     name: req.params.name,
                     fullName: req.params.owner + "/" + req.params.name,
-                    token: uuid.raw()
+                    token: uuid.v4()
                 });
                 repo.save();
             }
