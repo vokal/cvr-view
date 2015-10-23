@@ -527,23 +527,21 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
             return callback( new Error( "Token is not registered" ) );
         }
 
+        // query param options take precedence over saved settings
         if( options.removePath )
         {
             coverage = cvr.removePath( coverage, options.removePath );
         }
+        else if( repo.removePath )
+        {
+            coverage = cvr.removePath( coverage, repo.removePath );
+        } 
 
         if( options.prependPath )
         {
             coverage = cvr.prependPath( coverage, options.prependPath, coverageType );
-        }
-
-        // query param options take precedence over saved settings
-        if( repo.removePath && !options.removePath )
-        {
-            coverage = cvr.removePath( coverage, repo.removePath );
-        }
-
-        if( repo.prependPath && !options.prependPath )
+        } 
+        else if( repo.prependPath )
         {
             coverage = cvr.prependPath( coverage, repo.prependPath, coverageType );
         }
