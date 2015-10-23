@@ -20,6 +20,9 @@ db.once( "open", function ( callback ) {
   // yay!
 });
 
+var lcovFnMatch = "^FN:[0-9]\\{1,\\},([a-zA-Z0-9_]\\{1,\\})$"
+var gocoverMatch = "^[a-zA-Z/]\\{1,\\}\\.go:[0-9]\\{1,\\}\\.[0-9]\\{1,\\},[0-9]\\{1,\\}\\.[0-9]\\{1,\\} [0-9]\\{1,\\} [0-9]\\{1,\\}$"
+
 router.get( "/", function ( req, res, next )
 {
     res.render( "index", {
@@ -58,6 +61,8 @@ router.get( "/upload", function( req, res, next )
 {
     res.set( "Content-Type", "text/plain" );
     res.render( "upload", {
+        lcovRegex: lcovFnMatch,
+        gocovRegex: gocoverMatch,
         proto: req.protocol,
         host: req.hostname
     } )
@@ -262,6 +267,9 @@ router.all( "/repo/:owner/:name/settings",
             if( req.body.minPassingLinePercent !== undefined )
             {
                 repo.minPassingLinePercent = req.body.minPassingLinePercent;
+                repo.removePath = req.body.removePath;
+                repo.prependPath = req.body.prependPath;
+
                 repo.save( function ( err )
                 {
                     if( err )
@@ -512,16 +520,6 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
         return callback( new Error( "Coverage is empty" ) );
     }
 
-    if( options.removePath )
-    {
-        coverage = cvr.removePath( coverage, options.removePath );
-    }
-
-    if( options.prependPath )
-    {
-        coverage = cvr.prependPath( coverage, options.prependPath, coverageType );
-    }
-
     var onRepo = function ( err, repo )
     {
         if( err )
@@ -532,6 +530,25 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
         if( !repo )
         {
             return callback( new Error( "Token is not registered" ) );
+        }
+
+        // query param options take precedence over saved settings
+        if( options.removePath )
+        {
+            coverage = cvr.removePath( coverage, options.removePath );
+        }
+        else if( repo.removePath )
+        {
+            coverage = cvr.removePath( coverage, repo.removePath );
+        } 
+
+        if( options.prependPath )
+        {
+            coverage = cvr.prependPath( coverage, options.prependPath, coverageType );
+        } 
+        else if( repo.prependPath )
+        {
+            coverage = cvr.prependPath( coverage, repo.prependPath, coverageType );
         }
 
         var onHashList = function ( err, hashes )
