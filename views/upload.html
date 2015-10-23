@@ -5,6 +5,9 @@ GIT_HASH=$(git rev-parse HEAD)
 COVERAGE_TYPE=""
 COVERAGE_FILE=""
 
+LCOV_FN_MATCH="{{ lcovRegex }}"
+GOCOVER_MATCH="{{ gocovRegex }}"
+
 # This is a naive hack. There are many like it but this one is mine.
 get_coverage_type() {
     grep -q cobertura $1
@@ -14,12 +17,14 @@ get_coverage_type() {
         return 0
     fi
 
-    if [ ${1: -5} == ".info" ]; then
+    grep -q "${LCOV_FN_MATCH}" $1
+
+    if [ $? == 0 ]; then
         COVERAGE_TYPE="lcov"
         return 0
     fi
 
-    grep -q "\.go" $1
+    grep -q "${GOCOVER_MATCH}" $1
 
     if [ $? == 0 ]; then
         COVERAGE_TYPE="gocover"
@@ -118,7 +123,7 @@ curl --silent \
     --location \
     --show-error \
     --form coverage=@${COVERAGE_FILE} \
-    -XPOST \
+    --request POST \
     "${COVERAGE_URL}?token=${CVR_TOKEN}&commit=${GIT_HASH}&coveragetype=${COVERAGE_TYPE}"
 
 RESULT=$?
