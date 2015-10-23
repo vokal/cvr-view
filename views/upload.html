@@ -5,8 +5,8 @@ GIT_HASH=$(git rev-parse HEAD)
 COVERAGE_TYPE=""
 COVERAGE_FILE=""
 
-LCOV_FN_MATCH="^FN:[0-9]\{1,\},([a-zA-Z0-9_]\{1,\})$"
-GOCOVER_MATCH="^[a-zA-Z/]\{1,\}\.go:[0-9]\{1,\}\.[0-9]\{1,\},[0-9]\{1,\}\.[0-9]\{1,\} [0-9]\{1,\} [0-9]\{1,\}$"
+LCOV_FN_MATCH="{{ lcov_regex }}"
+GOCOVER_MATCH="{{ gocov_regex }}"
 
 # This is a naive hack. There are many like it but this one is mine.
 get_coverage_type() {
