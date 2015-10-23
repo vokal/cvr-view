@@ -537,6 +537,17 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
             return callback( new Error( "Token is not registered" ) );
         }
 
+        // query param options take precedence over saved settings
+        if( repo.removePath && !options.removePath )
+        {
+            coverage = cvr.removePath( coverage, repo.removePath );
+        }
+
+        if( repo.prependPath && !options.prependPath )
+        {
+            coverage = cvr.prependPath( coverage, repo.prependPath, coverageType );
+        }
+
         var onCommit = function ( err, commit )
         {
             if( err )
