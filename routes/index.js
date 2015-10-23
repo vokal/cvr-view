@@ -61,8 +61,8 @@ router.get( "/upload", function( req, res, next )
 {
     res.set( "Content-Type", "text/plain" );
     res.render( "upload", {
-        lcov_regex: lcovFnMatch,
-        gocov_regex: gocoverMatch,
+        lcovRegex: lcovFnMatch,
+        gocovRegex: gocoverMatch,
         proto: req.protocol,
         host: req.hostname
     } )
