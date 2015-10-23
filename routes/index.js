@@ -538,15 +538,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
         {
             if( err )
             {
-                return next( err );
-            }
-
-            if( !hashes || hashes.length === 0 )
-            {
-                return res.render( "commit-activate", {
-                    layout: "layout.html",
-                    repo: repo,
-                    authed: true } );
+                return callback( err );
             }
 
             var onCommit = function ( err, commit )
@@ -575,9 +567,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                         {
                             var passing = linePercent >= repo.minPassingLinePercent;
                             var newStatus = passing ? "success" : "failure";
-                            var currentLinePercent = linePercent.toFixed( 2 );
-                            var newDescription = currentLinePercent + "% line coverage";
-                            var covDiff = 0;
+                            var newDescription = linePercent.toFixed( 2 ) + "% line coverage";
                             
                             if( !passing )
                             {
@@ -586,14 +576,14 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
 
                             if ( hashes[ 0 ] )
                             {
-                                var changeDiff = currentLinePercent > hashes[ 0 ].linePercent.toFixed( 2 ) ? "+" : "";
-                                covDiff = currentLinePercent - hashes[ 0 ].linePercent;
+                                var changeDiff = linePercent > hashes[ 0 ].linePercent ? "+" : "";
+                                var covDiff = linePercent - hashes[ 0 ].linePercent;
 
-                                newDescription += " Coverage has changed by " + changeDiff + covDiff.toFixed( 2 ) + "%";
+                                newDescription += changeDiff + covDiff.toFixed( 2 ) + "% change.";
                             }
                             else
                             {
-                                newDescription += " There is no prior coverage.";
+                                newDescription += " no prior coverage.";
                             }
                             var status = {
                                 user: repo.owner,
