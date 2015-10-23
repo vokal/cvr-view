@@ -262,6 +262,9 @@ router.all( "/repo/:owner/:name/settings",
             if( req.body.minPassingLinePercent !== undefined )
             {
                 repo.minPassingLinePercent = req.body.minPassingLinePercent;
+                repo.removePath = req.body.removePath;
+                repo.prependPath = req.body.prependPath;
+
                 repo.save( function ( err )
                 {
                     if( err )
