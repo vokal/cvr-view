@@ -200,10 +200,11 @@ router.get( "/repo/:owner/:name/:hash?",
                             return next( err );
                         }
 
-                        cov.forEach( function ( file )
-                        {
-                            file.linePercent = 100 * file.lines.hit / file.lines.found;
-                        } );
+                        cvr.sortCoverage( cov )
+                            .forEach( function ( file )
+                            {
+                                file.linePercent = 100 * file.lines.hit / file.lines.found;
+                            } );
 
                         res.render( "commit", {
                             layout: "layout.html",
