@@ -40,7 +40,7 @@ body {
 
     .navbar-toggle:focus,
     .navbar-toggle:hover {
-        background-color: rgba(0,0,0,0.2); 
+        background-color: rgba(0,0,0,0.2);
     }
 }
 
@@ -206,7 +206,12 @@ form {
 }
 
 .repo {
+    vertical-align: top;
+    white-space: nowrap;
+    max-width: ~"calc( 100% - 150px )";
     font-weight: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .fraction {
