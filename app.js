@@ -25,6 +25,9 @@ if( process.env.GITHUB_ORGS_WHITELIST )
 
 var app = express();
 
+// proxy setup
+app.set( "trust proxy", true );
+
 // view engine setup
 app.set( "views", path.join( __dirname, "views" ));
 app.set( "view engine", "html" );
