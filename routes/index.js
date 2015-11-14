@@ -220,7 +220,7 @@ router.get( "/repo/:owner/:name/:hash?",
                         cvr.sortCoverage( cov )
                             .forEach( function ( file )
                             {
-                                file.linePercent = 100 * file.lines.hit / file.lines.found;
+                                file.linePercent = cvr.getLineCoveragePercent( [ file ] );
                             } );
 
                         res.render( "commit", {
