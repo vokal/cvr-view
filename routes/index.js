@@ -108,6 +108,15 @@ router.post( "/repo/:owner/:name/delete",
                 return next( err );
             }
 
+            cvr.deleteGitHubHook( req.session.user.token,
+                req.params.owner, req.params.name, host + "webhook", function ( err )
+            {
+                if( err )
+                {
+                    console.log( "failed to delete hook" );
+                }
+            } );
+
             return res.redirect( "/repos" );
         };
 
@@ -185,7 +194,7 @@ router.get( "/repo/:owner/:name/:hash?",
             {
                 if( err )
                 {
-                    console.log( "failed to register hook" );
+                    console.log( "failed to create hook" );
                 }
             } );
 
