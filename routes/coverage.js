@@ -122,10 +122,12 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                                 newDescription += " - requires " + repo.minPassingLinePercent + "%. ";
                             }
 
-                            if ( hashes[ 0 ] )
+                            var priorHash = hashes[ 0 ] && hashes[ 0 ].hash !== hash ? hashes[ 0 ] : hashes[ 1 ];
+
+                            if ( priorHash )
                             {
-                                var changeDiff = linePercent > hashes[ 0 ].linePercent ? "+" : "";
-                                var covDiff = linePercent - hashes[ 0 ].linePercent;
+                                var changeDiff = linePercent > priorHash.linePercent ? "+" : "";
+                                var covDiff = linePercent - priorHash.linePercent;
 
                                 newDescription += " " + changeDiff + covDiff.toFixed( 2 ) + "% change.";
                             }
