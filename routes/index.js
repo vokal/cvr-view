@@ -8,11 +8,9 @@ var uuid = require( "node-uuid" );
 
 var auth = require( "../lib/auth" );
 var models = require( "../lib/models" );
+var env = require( "../lib/env" );
 
-var dbConn = process.env.DB_CONN || require( "../local-settings.json" ).dbConn;
-mongoose.connect( dbConn );
-
-var host = process.env.HOST || require( "../local-settings.json" ).host;
+mongoose.connect( env.dbConn );
 
 var db = mongoose.connection;
 db.on( "error", console.error.bind( console, "connection error:" ));
@@ -72,7 +70,7 @@ router.get( "/repos",
     auth.ensureAuthenticated,
     require( "./repos" ) );
 
-router.get( "/coverage",
+router.post( "/coverage",
     require( "./coverage" ) );
 
 router.get( "/repo/:owner/:name/new-token",
@@ -109,7 +107,7 @@ router.post( "/repo/:owner/:name/delete",
             }
 
             cvr.deleteGitHubHook( req.session.user.token,
-                req.params.owner, req.params.name, host + "webhook", function ( err )
+                req.params.owner, req.params.name, env.host + "webhook", function ( err )
             {
                 if( err )
                 {
@@ -140,7 +138,7 @@ router.all( "/repo/:owner/:name/settings",
                 res.render( "repo-settings", {
                     layout: "layout.html",
                     repo: repo,
-                    host: host,
+                    host: env.host,
                     authed: true } );
             };
 
@@ -190,7 +188,7 @@ router.get( "/repo/:owner/:name/:hash?",
                 repo.save();
             }
 
-            cvr.createGitHubHook( req.session.user.token, repo.owner, repo.name, host + "webhook", function ( err )
+            cvr.createGitHubHook( req.session.user.token, repo.owner, repo.name, env.host + "webhook", function ( err )
             {
                 if( err )
                 {
