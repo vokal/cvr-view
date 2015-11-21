@@ -16,12 +16,7 @@ var cvr = require( "cvr" );
 var moment = require( "moment" );
 
 var routes = require( "./routes/index" );
-
-var orgsWhitelist = require( "./local-settings.json" ).gitHub.orgsWhitelist;
-if( process.env.GITHUB_ORGS_WHITELIST )
-{
-  orgsWhitelist = process.env.GITHUB_ORGS_WHITELIST.split( ":" );
-}
+var env = require( "./lib/env" );
 
 var app = express();
 
@@ -127,9 +122,9 @@ passport.deserializeUser (function ( obj, done )
 });
 
 passport.use( new GitHubStrategy({
-    clientID: process.env.GITHUB_CLIENTID || require( "./local-settings.json" ).gitHub.clientId,
-    clientSecret: process.env.GITHUB_CLIENTSECRET || require( "./local-settings.json" ).gitHub.clientSecret,
-    callbackURL: process.env.GITHUB_CALLBACKURL || require( "./local-settings.json" ).gitHub.callbackUrl,
+    clientID: env.gitHub.clientId,
+    clientSecret: env.gitHub.clientSecret,
+    callbackURL: env.gitHub.callbackUrl,
     scope: [ "user:email", "repo" ],
     passReqToCallback: true
   },
@@ -140,11 +135,11 @@ passport.use( new GitHubStrategy({
       {
         var orgValid = true;
 
-        if( orgsWhitelist && Array.isArray( orgsWhitelist ) )
+        if( env.orgsWhitelist && Array.isArray( env.orgsWhitelist ) )
         {
           orgValid = orgs.some( function ( o )
           {
-            return orgsWhitelist.indexOf( o.login ) !== -1;
+            return env.orgsWhitelist.indexOf( o.login ) !== -1;
           } );
         }
 

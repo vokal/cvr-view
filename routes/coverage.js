@@ -2,6 +2,7 @@
 
 var cvr = require( "cvr" );
 var models = require( "../lib/models" );
+var env = require( "../lib/env" );
 
 module.exports = function ( req, res, next )
 {
@@ -122,7 +123,12 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                                 newDescription += " - requires " + repo.minPassingLinePercent + "%. ";
                             }
 
-                            var priorHash = hashes[ 0 ] && hashes[ 0 ].hash !== hash ? hashes[ 0 ] : hashes[ 1 ];
+                            var indexOfCurrent = hashes.lastIndexOf( function ( compare )
+                            {
+                                return compare.hash === hash;
+                            } );
+
+                            var priorHash = indexOfCurrent > 0 ? hashes[ indexOfCurrent - 1 ] : null;
 
                             if ( priorHash )
                             {
@@ -142,7 +148,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                                 state: newStatus,
                                 context: "cvr",
                                 description: newDescription,
-                                target_url: host + "repo/" + repo.owner + "/" + repo.name + "/" + hash
+                                target_url: env.host + "repo/" + repo.owner + "/" + repo.name + "/" + hash
                             };
 
                             cvr.createGitHubStatus( tokenRes.oauth.token, status, function ( err )
