@@ -79,7 +79,9 @@
             </li>
             <li class="list-group-item">
                 <strong>ispullrequest</strong> (optional)<br>
-                Pass a truthy value to mark the commit_hash as a pull request, this shows as a badge on the commit page.
+                Pass a truthy value to force the commit_hash to show as a pull request.
+                If you omit the value it will be retrieved from the GitHub API.
+                This shows as a badge on the commit page.
             </li>
         </ul>
 
@@ -116,7 +118,7 @@ REPO_NAME="${TRAVIS_REPO_SLUG##*/}"
 # Let's put those into a URL query string fragment, to make the lines in this script shorter.
 GIT_PARAMS="commit=${LAST_PR_COMMIT}&owner=${REPO_OWNER}&repo=${REPO_NAME}"
 # Do the actual upload of PR coverage to cvr.vokal.io.
-URL="https://cvr.vokal.io/coverage?${GIT_PARAMS}&removepath=${TRAVIS_BUILD_DIR}&ispullrequest=1"
+URL="https://cvr.vokal.io/coverage?${GIT_PARAMS}&removepath=${TRAVIS_BUILD_DIR}"
 curl -F coverage=@"${LCOV_OUTPUT}" "${URL}"
 </code>
 </pre>

@@ -80,13 +80,21 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
             newDescription += " Requires " + repo.minPassingLinePercent + "%. ";
         }
 
-        var indexOfCurrent = hashes.lastIndexOf( function ( compare )
-        {
-            return compare.hash === hash;
-        } );
+        var priorHash = null;
 
-        var priorHash = indexOfCurrent >= 0 && hashes.length > indexOfCurrent + 1
-                            ? hashes[ indexOfCurrent + 1 ] : null;
+        if( hashes.length )
+        {
+            var indexOfCurrent = hashes.lastIndexOf( function ( compare )
+            {
+                return compare.hash === hash;
+            } );
+
+            priorHash = indexOfCurrent === -1
+                ? hashes[ 0 ]
+                : hashes.length > indexOfCurrent + 1
+                    ? hashes[ indexOfCurrent + 1 ]
+                    : null;
+        }
 
         if ( priorHash )
         {
