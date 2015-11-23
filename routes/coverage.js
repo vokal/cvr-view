@@ -3,6 +3,11 @@
 var cvr = require( "cvr" );
 var models = require( "../lib/models" );
 var env = require( "../lib/env" );
+var a = require( "async" );
+var githubApi = require( "github" );
+var github = new githubApi( {
+    version: "3.0.0"
+} );
 
 module.exports = function ( req, res, next )
 {
@@ -22,7 +27,7 @@ module.exports = function ( req, res, next )
         token: captureOn.token,
         owner: captureOn.owner,
         repo: captureOn.repo,
-        isPullRequest: captureOn.ispullrequest,
+        isPullRequest: !!captureOn.ispullrequest,
         removePath: captureOn.removepath,
         prependPath: captureOn.prependpath
     };
@@ -42,6 +47,12 @@ module.exports = function ( req, res, next )
 
 var saveCoverage = function ( hash, coverage, coverageType, options, callback )
 {
+    var repo = null;
+    var hashes = [];
+    var commit = null;
+    var cov = null;
+    var gitHubOauthToken = null;
+
     if( [ "lcov", "cobertura", "jacoco", "gocover" ].indexOf( coverageType ) === -1 )
     {
         return callback( new Error( "Coverage Type not valid" ) );
@@ -52,172 +63,199 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
         return callback( new Error( "Coverage is empty" ) );
     }
 
-    var onRepo = function ( err, repo )
+    var setCommitStatus = function ()
+    {
+        if( !gitHubOauthToken )
+        {
+            return;
+        }
+
+        var linePercent = cvr.getLineCoveragePercent( cov );
+        var passing = linePercent >= repo.minPassingLinePercent;
+        var newStatus = passing ? "success" : "failure";
+        var newDescription = linePercent.toFixed( 2 ) + "% line coverage.";
+
+        if( !passing )
+        {
+            newDescription += " Requires " + repo.minPassingLinePercent + "%. ";
+        }
+
+        var indexOfCurrent = hashes.lastIndexOf( function ( compare )
+        {
+            return compare.hash === hash;
+        } );
+
+        var priorHash = indexOfCurrent >= 0 && hashes.length > indexOfCurrent + 1
+                            ? hashes[ indexOfCurrent + 1 ] : null;
+
+        if ( priorHash )
+        {
+            var changeDiff = linePercent > priorHash.linePercent ? "+" : "";
+            var covDiff = linePercent - priorHash.linePercent;
+
+            newDescription += " " + changeDiff + covDiff.toFixed( 2 ) + "% change.";
+        }
+        else
+        {
+            newDescription += " No prior coverage.";
+        }
+        var status = {
+            user: repo.owner,
+            repo: repo.name,
+            sha: hash,
+            state: newStatus,
+            context: "cvr",
+            description: newDescription,
+            target_url: env.host + "repo/" + repo.owner + "/" + repo.name + "/" + hash
+        };
+
+        cvr.createGitHubStatus( gitHubOauthToken, status, function ( err )
+            {
+                // another silent failure?
+                if( err )
+                {
+                    console.log( err.message );
+                }
+            } );
+    };
+
+    var saveCommit = function ()
+    {
+        var linePercent = cvr.getLineCoveragePercent( cov );
+        repo.lastLinePercent = linePercent;
+
+        if( commit )
+        {
+            commit.coverage = coverage;
+            commit.linePercent = linePercent;
+            commit.created = new Date();
+            commit.save( callback );
+        }
+        else
+        {
+            github.authenticate( {
+                type: "oauth",
+                token: gitHubOauthToken
+            } );
+
+            github.pullRequests.getAll( {
+                user: repo.owner,
+                repo: repo.name
+            }, function ( err, prs )
+            {
+                // Fine is someone wants to override isPullRequest explicitly in the request
+                var isPullRequest = options.isPullRequest;
+
+                if( !isPullRequest && !err && prs )
+                {
+                    isPullRequest = prs.some( function ( pr )
+                    {
+                        return pr.head.sha === hash;
+                    } );
+                }
+
+                var newCommit = new models.Commit( {
+                    repo: {
+                        owner: repo.owner,
+                        name: repo.name,
+                        fullName: repo.fullName,
+                        provider: repo.provider
+                    },
+                    hash: hash,
+                    coverage: coverage,
+                    linePercent: linePercent,
+                    coverageType: coverageType,
+                    isPullRequest: isPullRequest,
+                    created: new Date()
+                } );
+
+                models.Commit.pushCommit( newCommit, callback );
+            } );
+        }
+
+        repo.save( function ( err )
+        {
+            if( err )
+            {
+                console.log( err );
+            }
+        });
+    };
+
+    a.waterfall( [
+        function ( done )
+        {
+            if( options.token )
+            {
+                models.Repo.findByToken( options.token, done );
+            }
+            else
+            {
+                models.Repo.findByOwnerAndName( options.owner, options.repo, done );
+            }
+        },
+        function ( $repo, done )
+        {
+            repo = $repo;
+
+            if( !repo )
+            {
+                return done( new Error( "Token is not registered" ) );
+            }
+
+            // query param options take precedence over saved settings
+            if( options.removePath )
+            {
+                coverage = cvr.removePath( coverage, options.removePath );
+            }
+            else if( repo.removePath )
+            {
+                coverage = cvr.removePath( coverage, repo.removePath );
+            }
+
+            if( options.prependPath )
+            {
+                coverage = cvr.prependPath( coverage, options.prependPath, coverageType );
+            }
+            else if( repo.prependPath )
+            {
+                coverage = cvr.prependPath( coverage, repo.prependPath, coverageType );
+            }
+
+            models.Commit.findCommitList( repo.owner, repo.name, done );
+        },
+        function ( $hashes, done )
+        {
+            hashes = $hashes;
+            models.Commit.findCommit( repo.owner, repo.name, hash, done );
+        },
+        function ( $commit, done )
+        {
+            commit = $commit;
+            cvr.getCoverage( coverage, coverageType, done );
+        },
+        function ( $cov, done )
+        {
+            cov = $cov;
+            done();
+        }
+    ], function ( err )
     {
         if( err )
         {
             return callback( err );
         }
+        models.User.getTokenForRepoFullName( repo.fullName, function ( err, tokenRes )
+        {
+            gitHubOauthToken = tokenRes ? tokenRes.oauth.token : null;
+            saveCommit();
+            setCommitStatus();
 
-        if( !repo )
-        {
-            return callback( new Error( "Token is not registered" ) );
-        }
-
-        // query param options take precedence over saved settings
-        if( options.removePath )
-        {
-            coverage = cvr.removePath( coverage, options.removePath );
-        }
-        else if( repo.removePath )
-        {
-            coverage = cvr.removePath( coverage, repo.removePath );
-        }
-
-        if( options.prependPath )
-        {
-            coverage = cvr.prependPath( coverage, options.prependPath, coverageType );
-        }
-        else if( repo.prependPath )
-        {
-            coverage = cvr.prependPath( coverage, repo.prependPath, coverageType );
-        }
-
-        var onHashList = function ( err, hashes )
-        {
             if( err )
             {
-                return callback( err );
+                console.log( err.message );
             }
+        } );
+    } );
 
-            var onCommit = function ( err, commit )
-            {
-                if( err )
-                {
-                    return callback( err );
-                }
-
-                cvr.getCoverage( coverage, coverageType, function ( err, cov )
-                {
-                    if( err )
-                    {
-                        return callback( err );
-                    }
-
-                    var onGotAccessToken = function ( err, tokenRes )
-                    {
-                        // not sure how errors should be handled here yet, silent failure seems like an ok option
-                        if( err )
-                        {
-                            console.log( err.message );
-                        }
-
-                        if( tokenRes.oauth.token )
-                        {
-                            var passing = linePercent >= repo.minPassingLinePercent;
-                            var newStatus = passing ? "success" : "failure";
-                            var newDescription = linePercent.toFixed( 2 ) + "% line coverage.";
-
-                            if( !passing )
-                            {
-                                newDescription += " Requires " + repo.minPassingLinePercent + "%. ";
-                            }
-
-                            var indexOfCurrent = hashes.lastIndexOf( function ( compare )
-                            {
-                                return compare.hash === hash;
-                            } );
-
-                            var priorHash = indexOfCurrent >= 0 && hashes.length > indexOfCurrent + 1
-                                                ? hashes[ indexOfCurrent + 1 ] : null;
-
-                            if ( priorHash )
-                            {
-                                var changeDiff = linePercent > priorHash.linePercent ? "+" : "";
-                                var covDiff = linePercent - priorHash.linePercent;
-
-                                newDescription += " " + changeDiff + covDiff.toFixed( 2 ) + "% change.";
-                            }
-                            else
-                            {
-                                newDescription += " No prior coverage.";
-                            }
-                            var status = {
-                                user: repo.owner,
-                                repo: repo.name,
-                                sha: hash,
-                                state: newStatus,
-                                context: "cvr",
-                                description: newDescription,
-                                target_url: env.host + "repo/" + repo.owner + "/" + repo.name + "/" + hash
-                            };
-
-                            cvr.createGitHubStatus( tokenRes.oauth.token, status, function ( err )
-                                {
-                                    // another silent failure?
-                                    if( err )
-                                    {
-                                        console.log( err.message );
-                                    }
-                                } );
-                        }
-                    };
-
-                    var linePercent = cvr.getLineCoveragePercent( cov );
-                    repo.lastLinePercent = linePercent;
-
-                    if( commit )
-                    {
-                        commit.coverage = coverage;
-                        commit.linePercent = linePercent;
-                        commit.created = new Date();
-                        commit.save( callback );
-                    }
-                    else
-                    {
-                        var newCommit = new models.Commit({
-                            repo: {
-                                owner: repo.owner,
-                                name: repo.name,
-                                fullName: repo.fullName,
-                                provider: repo.provider
-                            },
-                            hash: hash,
-                            coverage: coverage,
-                            linePercent: linePercent,
-                            coverageType: coverageType,
-                            isPullRequest: !!options.isPullRequest,
-                            created: new Date()
-                        });
-
-                        models.Commit.pushCommit( newCommit, callback );
-                    }
-
-                    repo.save( function ( err )
-                    {
-                        if( err )
-                        {
-                            console.log( err );
-                        }
-                    });
-
-                    models.User.getTokenForRepoFullName( repo.fullName, onGotAccessToken );
-                } );
-            };
-
-            models.Commit.findCommit( repo.owner, repo.name, hash, onCommit );
-        };
-
-        models.Commit.findCommitList( repo.owner, repo.name, onHashList );
-
-    };
-
-    if( options.token )
-    {
-        models.Repo.findByToken( options.token, onRepo );
-    }
-    else
-    {
-        models.Repo.findByOwnerAndName( options.owner, options.repo, onRepo );
-    }
 };
