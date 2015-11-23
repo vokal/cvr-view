@@ -84,7 +84,7 @@ router.get( "/repo/:owner/:name/new-token",
                 return next( err );
             }
 
-            repo.token = uuid.v4();
+            repo.token = uuid.v4().replace( /-/g, "" );
             repo.save( function ()
             {
                 return res.redirect( "/repo/" + req.params.owner + "/" + req.params.name );
@@ -183,7 +183,7 @@ router.get( "/repo/:owner/:name/:hash?",
                     owner: req.params.owner,
                     name: req.params.name,
                     fullName: req.params.owner + "/" + req.params.name,
-                    token: uuid.v4()
+                    token: uuid.v4().replace( /-/g, "" )
                 });
                 repo.save();
             }
