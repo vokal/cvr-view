@@ -116,11 +116,11 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                         {
                             var passing = linePercent >= repo.minPassingLinePercent;
                             var newStatus = passing ? "success" : "failure";
-                            var newDescription = linePercent.toFixed( 2 ) + "% line coverage";
+                            var newDescription = linePercent.toFixed( 2 ) + "% line coverage.";
 
                             if( !passing )
                             {
-                                newDescription += " - requires " + repo.minPassingLinePercent + "%. ";
+                                newDescription += " Requires " + repo.minPassingLinePercent + "%. ";
                             }
 
                             var indexOfCurrent = hashes.lastIndexOf( function ( compare )
@@ -128,7 +128,8 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                                 return compare.hash === hash;
                             } );
 
-                            var priorHash = indexOfCurrent > 0 ? hashes[ indexOfCurrent - 1 ] : null;
+                            var priorHash = indexOfCurrent >= 0 && hashes.length > indexOfCurrent + 1
+                                                ? hashes[ indexOfCurrent + 1 ] : null;
 
                             if ( priorHash )
                             {
@@ -139,7 +140,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                             }
                             else
                             {
-                                newDescription += " no prior coverage.";
+                                newDescription += " No prior coverage.";
                             }
                             var status = {
                                 user: repo.owner,
