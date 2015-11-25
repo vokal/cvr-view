@@ -5,6 +5,7 @@ var router = express.Router();
 var mongoose = require( "mongoose" );
 var auth = require( "../lib/auth" );
 var env = require( "../lib/env" );
+var passport = require( "../lib/passport" );
 
 mongoose.connect( env.dbConn );
 
@@ -44,10 +45,30 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
     auth.ensureAuthenticated,
     require( "./file" ) );
 
+router.get( "/logout", require( "./logout" ) );
 router.get( "/upload", require( "./upload" ) );
 router.get( "/:owner/:name/shield.svg", require( "./shield" ) );
 
 router.post( "/coverage", require( "./coverage" ) );
 router.post( "/webhook", require( "./webhook" ) );
+
+router.get( "/auth/github", passport.authenticate( "github" ) );
+
+router.get( "/auth/github/callback",
+  passport.authenticate( "github", { successRedirect: "/auth/github/success", failureRedirect: "/" } ) );
+
+router.get( "/auth/github/success", function ( req, res )
+{
+    var onauth = req.cookies.onauth;
+    if( onauth )
+    {
+        res.clearCookie( "onauth" );
+        res.redirect( onauth );
+    }
+    else
+    {
+        res.redirect( "/repos" );
+    }
+} );
 
 module.exports = router;
