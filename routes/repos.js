@@ -7,7 +7,7 @@ module.exports = function ( req, res, next )
 {
     var username = req.session.user.profile.username;
 
-    var onActiveRepos = function ( err, user, active )
+    var onActiveRepos = function ( err, user )
     {
         if( err )
         {

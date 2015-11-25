@@ -6,7 +6,7 @@ var env = require( "../lib/env" );
 
 module.exports = function ( req, res, next )
 {
-    var onRemove = function ( err, repo )
+    var onRemove = function ( err )
     {
         if( err )
         {

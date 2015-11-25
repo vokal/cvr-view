@@ -2,7 +2,6 @@
 
 var cvr = require( "cvr" );
 var models = require( "../lib/models" );
-var env = require( "../lib/env" );
 
 module.exports = function ( req, res, next )
 {

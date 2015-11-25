@@ -1,6 +1,5 @@
 "use strict";
 
-var cvr = require( "cvr" );
 var models = require( "../lib/models" );
 var env = require( "../lib/env" );
 
