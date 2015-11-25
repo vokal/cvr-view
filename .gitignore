@@ -9,6 +9,7 @@ coverage
 build/Release
 node_modules
 .lock-wscript
+.env
 
 # =========================
 # Operating System Files
