@@ -89,11 +89,20 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                 return compare.hash === hash;
             } );
 
-            priorHash = indexOfCurrent === -1
-                ? hashes[ 0 ]
-                : hashes.length > indexOfCurrent + 1
-                    ? hashes[ indexOfCurrent + 1 ]
-                    : null;
+            var getPriorHashOnMaster = function ( indexOfCurrent )
+            {
+                for( var i = indexOfCurrent + 1; i < hashes.length; i++ )
+                {
+                    if( !hashes[ i ].isPullRequest )
+                    {
+                        return hashes[ i ];
+                    }
+               }
+
+               return null;
+            };
+
+            priorHash = getPriorHashOnMaster( indexOfCurrent );
         }
 
         if ( priorHash )
