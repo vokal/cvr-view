@@ -1,3 +1,0 @@
-image: docker.vokal.io/web-testing
-script:
-    - npm install
