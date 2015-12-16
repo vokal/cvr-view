@@ -36,13 +36,23 @@ module.exports = function ( req, res, next )
         ? req.files.coverage.buffer.toString()
         : captureOn.coverage;
 
-    if( captureOn.commit && coverage && ( options.token || options.owner && options.repo ) )
+    if( !captureOn.commit )
     {
-        return saveCoverage( captureOn.commit, coverage,
-            captureOn.coveragetype || "lcov", options, onCoverageSaved );
+        return res.status( 400 ).send( "commit is required" ).end();
     }
 
-    res.status( 400 ).send( "Required parameters missing" ).end();
+    if( !( options.token || options.owner && options.repo ) )
+    {
+        return res.status( 400 ).send( "token or owner and repo are required" ).end();
+    }
+
+    if( !coverage )
+    {
+        return res.status( 400 ).send( "coverage is empty" ).end();
+    }
+
+    return saveCoverage( captureOn.commit, coverage,
+        captureOn.coveragetype || "lcov", options, onCoverageSaved );
 };
 
 var saveCoverage = function ( hash, coverage, coverageType, options, callback )
@@ -56,11 +66,6 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
     if( [ "lcov", "cobertura", "jacoco", "gocover" ].indexOf( coverageType ) === -1 )
     {
         return callback( new Error( "Coverage Type not valid" ) );
-    }
-
-    if( !coverage )
-    {
-        return callback( new Error( "Coverage is empty" ) );
     }
 
     var setCommitStatus = function ()
@@ -217,7 +222,11 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
 
             if( !repo )
             {
-                return done( new Error( "Token is not registered" ) );
+                if( options.token )
+                {
+                    return done( new Error( "Token is not registered" ) );
+                }
+                return done( new Error( "Cannot find repo by owner and repo name" ) );
             }
 
             // query param options take precedence over saved settings
