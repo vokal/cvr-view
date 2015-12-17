@@ -15,10 +15,10 @@ module.exports = function ( req, res, next )
     {
         if( err )
         {
-            return res.status( 400 ).send( err.message ).end();
+            return res.status( 400 ).send( err.message );
         }
 
-        return res.status( 201 ).send( "Saved Coverage" ).end();
+        return res.status( 201 ).send( "Saved Coverage" );
     };
 
     var captureOn = req.body.commit ? req.body : req.query;
@@ -38,17 +38,17 @@ module.exports = function ( req, res, next )
 
     if( !captureOn.commit )
     {
-        return res.status( 400 ).send( "commit is required" ).end();
+        return res.status( 400 ).send( "commit is required" );
     }
 
     if( !( options.token || options.owner && options.repo ) )
     {
-        return res.status( 400 ).send( "token or owner and repo are required" ).end();
+        return res.status( 400 ).send( "token or owner and repo are required" );
     }
 
     if( !coverage )
     {
-        return res.status( 400 ).send( "coverage is empty" ).end();
+        return res.status( 400 ).send( "coverage is empty" );
     }
 
     return saveCoverage( captureOn.commit, coverage,
