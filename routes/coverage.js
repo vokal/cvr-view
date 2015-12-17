@@ -15,10 +15,10 @@ module.exports = function ( req, res, next )
     {
         if( err )
         {
-            return res.status( 400 ).send( err.message ).end();
+            return res.status( 400 ).send( err.message );
         }
 
-        return res.status( 201 ).end();
+        return res.status( 201 ).send( "Saved coverage" );
     };
 
     var captureOn = req.body.commit ? req.body : req.query;
@@ -36,13 +36,23 @@ module.exports = function ( req, res, next )
         ? req.files.coverage.buffer.toString()
         : captureOn.coverage;
 
-    if( captureOn.commit && coverage && ( options.token || options.owner && options.repo ) )
+    if( !captureOn.commit )
     {
-        return saveCoverage( captureOn.commit, coverage,
-            captureOn.coveragetype || "lcov", options, onCoverageSaved );
+        return res.status( 400 ).send( "Commit is required" );
     }
 
-    res.status( 400 ).send( "Required parameters missing" ).end();
+    if( !( options.token || options.owner && options.repo ) )
+    {
+        return res.status( 400 ).send( "Token or owner and repo are required" );
+    }
+
+    if( !coverage )
+    {
+        return res.status( 400 ).send( "Coverage is empty" );
+    }
+
+    return saveCoverage( captureOn.commit, coverage,
+        captureOn.coveragetype || "lcov", options, onCoverageSaved );
 };
 
 var saveCoverage = function ( hash, coverage, coverageType, options, callback )
@@ -55,12 +65,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
 
     if( [ "lcov", "cobertura", "jacoco", "gocover" ].indexOf( coverageType ) === -1 )
     {
-        return callback( new Error( "Coverage Type not valid" ) );
-    }
-
-    if( !coverage )
-    {
-        return callback( new Error( "Coverage is empty" ) );
+        return callback( new Error( "Coverage type not valid" ) );
     }
 
     var setCommitStatus = function ()
@@ -89,11 +94,20 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                 return compare.hash === hash;
             } );
 
-            priorHash = indexOfCurrent === -1
-                ? hashes[ 0 ]
-                : hashes.length > indexOfCurrent + 1
-                    ? hashes[ indexOfCurrent + 1 ]
-                    : null;
+            var getPriorHashOnMaster = function ( indexOfCurrent )
+            {
+                for( var i = indexOfCurrent + 1; i < hashes.length; i++ )
+                {
+                    if( !hashes[ i ].isPullRequest )
+                    {
+                        return hashes[ i ];
+                    }
+               }
+
+               return null;
+            };
+
+            priorHash = getPriorHashOnMaster( indexOfCurrent );
         }
 
         if ( priorHash )
@@ -151,7 +165,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                 repo: repo.name
             }, function ( err, prs )
             {
-                // Fine is someone wants to override isPullRequest explicitly in the request
+                // Fine if someone wants to override isPullRequest explicitly in the request
                 var isPullRequest = options.isPullRequest;
 
                 if( !isPullRequest && !err && prs )
@@ -208,7 +222,11 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
 
             if( !repo )
             {
-                return done( new Error( "Token is not registered" ) );
+                if( options.token )
+                {
+                    return done( new Error( "Token is not registered" ) );
+                }
+                return done( new Error( "Cannot find repo by owner and repo name" ) );
             }
 
             // query param options take precedence over saved settings
