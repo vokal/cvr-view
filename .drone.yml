@@ -8,7 +8,7 @@ env:
     - GITHUB_ORGS_WHITELIST=vokal
     - HOST=https://cvr.vokal.io/
 script:
-    - npm install -g istanbul
-    - npm install
+    - npm install --silent -g istanbul
+    - npm install --silent
     - chmod +x run-build.sh
     - ./run-build.sh
