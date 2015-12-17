@@ -26,7 +26,7 @@ module.exports = function ( req, res, next )
 
     if( title.indexOf( "[ci skip]" ) >= 0 || title.indexOf( "[skip ci]" ) >= 0 )
     {
-        return res.status( 202 ).send( "Commit skipped by user, pending status not set" ).end();
+        return res.status( 202 ).send( "Commit skipped by [ci skip], pending status not set" ).end();
     }
 
     var onGotAccessToken = function ( err, tokenRes )
