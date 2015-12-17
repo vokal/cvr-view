@@ -24,7 +24,7 @@ module.exports = function ()
             .expect( 202 )
             .end( function ( err, res )
             {
-                assert.equal( res.text, "Not a Pull Request" );
+                assert.equal( res.text, "Not a pull request" );
                 done( err );
             } );
     } );

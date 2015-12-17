@@ -18,7 +18,7 @@ module.exports = function ( req, res, next )
             return res.status( 400 ).send( err.message );
         }
 
-        return res.status( 201 ).send( "Saved Coverage" );
+        return res.status( 201 ).send( "Saved coverage" );
     };
 
     var captureOn = req.body.commit ? req.body : req.query;
@@ -38,17 +38,17 @@ module.exports = function ( req, res, next )
 
     if( !captureOn.commit )
     {
-        return res.status( 400 ).send( "commit is required" );
+        return res.status( 400 ).send( "Commit is required" );
     }
 
     if( !( options.token || options.owner && options.repo ) )
     {
-        return res.status( 400 ).send( "token or owner and repo are required" );
+        return res.status( 400 ).send( "Token or owner and repo are required" );
     }
 
     if( !coverage )
     {
-        return res.status( 400 ).send( "coverage is empty" );
+        return res.status( 400 ).send( "Coverage is empty" );
     }
 
     return saveCoverage( captureOn.commit, coverage,
@@ -65,7 +65,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
 
     if( [ "lcov", "cobertura", "jacoco", "gocover" ].indexOf( coverageType ) === -1 )
     {
-        return callback( new Error( "Coverage Type not valid" ) );
+        return callback( new Error( "Coverage type not valid" ) );
     }
 
     var setCommitStatus = function ()

@@ -19,7 +19,7 @@ module.exports = function ( req, res, next )
 
     if( !pr || [ "opened", "synchronize" ].indexOf( req.body.action ) === -1 )
     {
-        return res.status( 202 ).send( "Not a Pull Request" );
+        return res.status( 202 ).send( "Not a pull request" );
     }
 
     var title = req.body.pull_request.title;

@@ -23,7 +23,7 @@ module.exports = function ()
             .expect( 400 )
             .end( function ( err, res )
             {
-                assert.equal( res.text, "commit is required" );
+                assert.equal( res.text, "Commit is required" );
                 done( err );
             } );
     } );
@@ -36,7 +36,7 @@ module.exports = function ()
             .expect( 400 )
             .end( function ( err, res )
             {
-                assert.equal( res.text, "token or owner and repo are required" );
+                assert.equal( res.text, "Token or owner and repo are required" );
                 done( err );
             } );
     } );
@@ -83,7 +83,7 @@ module.exports = function ()
             .expect( 400 )
             .end( function ( err, res )
             {
-                assert.equal( res.text, "coverage is empty" );
+                assert.equal( res.text, "Coverage is empty" );
                 done( err );
             } );
     } );
@@ -101,7 +101,7 @@ module.exports = function ()
             .expect( 201 )
             .end( function ( err, res )
             {
-                assert.equal( res.text, "Saved Coverage" );
+                assert.equal( res.text, "Saved coverage" );
                 done( err );
             } );
     } );
