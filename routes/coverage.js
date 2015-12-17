@@ -18,7 +18,7 @@ module.exports = function ( req, res, next )
             return res.status( 400 ).send( err.message ).end();
         }
 
-        return res.status( 201 ).end();
+        return res.status( 201 ).send( "Saved Coverage" ).end();
     };
 
     var captureOn = req.body.commit ? req.body : req.query;
@@ -165,7 +165,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                 repo: repo.name
             }, function ( err, prs )
             {
-                // Fine is someone wants to override isPullRequest explicitly in the request
+                // Fine if someone wants to override isPullRequest explicitly in the request
                 var isPullRequest = options.isPullRequest;
 
                 if( !isPullRequest && !err && prs )

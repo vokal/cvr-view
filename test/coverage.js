@@ -87,4 +87,22 @@ module.exports = function ()
                 done( err );
             } );
     } );
+
+    it( "should save coverage", function ( done )
+    {
+        this.timeout( 10000 );
+
+        request( server )
+            .post( "/coverage" )
+            .field( "commit", "627786ba8f153d46e808c9b6c2755fa5ce38de6d" )
+            .field( "owner", "vokal" )
+            .field( "repo", "cvr-view" )
+            .attach( "coverage", "test/assets/lcov.info" )
+            .expect( 201 )
+            .end( function ( err, res )
+            {
+                assert.equal( res.text, "Saved Coverage" );
+                done( err );
+            } );
+    } );
 };
