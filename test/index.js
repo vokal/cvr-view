@@ -24,11 +24,13 @@ describe( "CVR", function ()
 
     describe( "Home", require( "./home" ) );
     describe( "Repos", require( "./repos" ) );
+    describe( "Repo Settings", require( "./repo-settings" ) );
     describe( "Posting coverage", require( "./coverage" )  );
     describe( "Posting webhook", require( "./webhook" )  );
     describe( "Shields", require( "./shields" ) );
     describe( "Upload", require( "./upload" ) );
     describe( "Log Out", require( "./log-out" ) );
+    describe( "Auth Success", require( "./auth-success" ) );
 
     describe( "HBS", require( "./hbs" ) );
 } );
