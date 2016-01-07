@@ -28,7 +28,7 @@ module.exports = function ()
             } );
     } );
 
-    it( "should validate repo", function ( done )
+    it( "should validate repo is required", function ( done )
     {
         request( server )
             .post( "/coverage" )
@@ -56,7 +56,7 @@ module.exports = function ()
             } );
     } );
 
-    it( "should validate repo", function ( done )
+    it( "should validate repo exists under owner", function ( done )
     {
         request( server )
             .post( "/coverage" )
@@ -84,6 +84,23 @@ module.exports = function ()
             .end( function ( err, res )
             {
                 assert.equal( res.text, "Coverage is empty" );
+                done( err );
+            } );
+    } );
+
+    it( "should validate coverage has a valid type", function ( done )
+    {
+        request( server )
+            .post( "/coverage" )
+            .field( "commit", "123" )
+            .field( "owner", "123" )
+            .field( "repo", "123" )
+            .field( "coveragetype", "not a real thing" )
+            .attach( "coverage", "test/assets/lcov.info" )
+            .expect( 400 )
+            .end( function ( err, res )
+            {
+                assert.equal( res.text, "Coverage type not valid" );
                 done( err );
             } );
     } );
