@@ -39,4 +39,25 @@ module.exports = function ()
             .get( "/repos" )
             .expect( 200, done );
     } );
+
+    it( "should load cvr-view repo", function ( done )
+    {
+        agent
+            .get( "/repo/vokal/cvr-view" )
+            .expect( 200, done );
+    } );
+
+    it( "should load cvr-view repo settings", function ( done )
+    {
+        agent
+            .get( "/repo/vokal/cvr-view/settings" )
+            .expect( 200, done );
+    } );
+
+    it( "should load a cvr-view file", function ( done )
+    {
+        agent
+            .get( "/repo/vokal/cvr-view/4b07d8b911cef066a1f06a49a91ffa7c68e66b35/app.js" )
+            .expect( 200, done );
+    } );
 };
