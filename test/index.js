@@ -31,6 +31,7 @@ describe( "CVR", function ()
     describe( "Upload", require( "./upload" ) );
     describe( "Log Out", require( "./log-out" ) );
     describe( "Auth Success", require( "./auth-success" ) );
+    describe( "404", require( "./404" ) );
 
     describe( "HBS", require( "./hbs" ) );
 } );
