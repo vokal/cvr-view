@@ -27,7 +27,6 @@ module.exports = function ( req, res, next )
         token: captureOn.token,
         owner: captureOn.owner,
         repo: captureOn.repo,
-        isPullRequest: !!captureOn.ispullrequest,
         removePath: captureOn.removepath,
         prependPath: captureOn.prependpath
     };
@@ -165,16 +164,10 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                 repo: repo.name
             }, function ( err, prs )
             {
-                // Fine if someone wants to override isPullRequest explicitly in the request
-                var isPullRequest = options.isPullRequest;
-
-                if( !isPullRequest && !err && prs )
+                var isPullRequest = !err && prs && prs.some( function ( pr )
                 {
-                    isPullRequest = prs.some( function ( pr )
-                    {
-                        return pr.head.sha === hash;
-                    } );
-                }
+                    return pr.head.sha === hash;
+                } );
 
                 var newCommit = new models.Commit( {
                     repo: {
@@ -230,22 +223,16 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
             }
 
             // query param options take precedence over saved settings
-            if( options.removePath )
+            var removePath = options.removePath || repo.removePath;
+            if( removePath )
             {
-                coverage = cvr.removePath( coverage, options.removePath );
-            }
-            else if( repo.removePath )
-            {
-                coverage = cvr.removePath( coverage, repo.removePath );
+                coverage = cvr.removePath( coverage, removePath );
             }
 
-            if( options.prependPath )
+            var prependPath = options.prependPath || repo.prependPath;
+            if( prependPath )
             {
-                coverage = cvr.prependPath( coverage, options.prependPath, coverageType );
-            }
-            else if( repo.prependPath )
-            {
-                coverage = cvr.prependPath( coverage, repo.prependPath, coverageType );
+                coverage = cvr.prependPath( coverage, prependPath, coverageType );
             }
 
             models.Commit.findCommitList( repo.owner, repo.name, done );
