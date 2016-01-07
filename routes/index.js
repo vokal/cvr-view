@@ -6,6 +6,10 @@ var mongoose = require( "mongoose" );
 var auth = require( "../lib/auth" );
 var env = require( "../lib/env" );
 var passport = require( "../lib/passport" );
+var githubApi = require( "github" );
+var github = new githubApi( {
+    version: "3.0.0"
+} );
 
 mongoose.connect( env.dbConn );
 
@@ -69,6 +73,41 @@ router.get( "/auth/github/success", function ( req, res )
     {
         res.redirect( "/repos" );
     }
+} );
+
+router.post( "/auth/github/token", function ( req, res, next )
+{
+    var token = req.body.token;
+
+    github.authenticate( {
+        type: "oauth",
+        token: token
+    } );
+
+    github.user.get( {}, function ( err, profile )
+    {
+        if( err )
+        {
+            if( err.code === 401 )
+            {
+                var err = new Error( "Invalid Token" );
+                err.status = 401;
+            }
+
+            return next( err );
+        }
+
+        var user = { token: token, profile: { username: profile.login } };
+        req.login( user, function ( err )
+        {
+            if ( err )
+            {
+                return next( err );
+            }
+            req.session.user = user;
+            return res.redirect( "/repos" );
+        } );
+    } );
 } );
 
 module.exports = router;
