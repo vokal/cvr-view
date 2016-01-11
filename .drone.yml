@@ -7,6 +7,7 @@ env:
     - GITHUB_CALLBACKURL=https://cvr.vokal.io/auth/github/callback
     - GITHUB_ORGS_WHITELIST=vokal
     - HOST=https://cvr.vokal.io/
+    - GITHUB_TESTING_AUTH_TOKEN=$$gitHubTestingAuthToken
 script:
     - npm install --silent -g istanbul
     - npm install --silent
