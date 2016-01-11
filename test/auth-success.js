@@ -20,6 +20,19 @@ module.exports = function ()
     {
         request( server )
             .get( "/auth/github/success" )
-            .expect( 302, done );
+            .expect( 302 )
+            .end( function ( err, res )
+            {
+                assert.equal( res.headers.location, "/repos" );
+                done( err );
+            } );
+    } );
+
+    it( "should fail token auth when invalid", function ( done )
+    {
+        request( server )
+            .post( "/auth/github/token" )
+            .field( "token", "123" )
+            .expect( 401, done );
     } );
 };
