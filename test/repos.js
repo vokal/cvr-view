@@ -42,6 +42,8 @@ module.exports = function ()
 
     it( "should load cvr-view repo", function ( done )
     {
+        this.timeout( 4000 );
+
         agent
             .get( "/repo/vokal/cvr-view" )
             .expect( 200, done );
