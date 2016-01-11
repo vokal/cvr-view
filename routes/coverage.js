@@ -154,6 +154,8 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
         }
         else
         {
+            var isPullRequest = false;
+
             github.authenticate( {
                 type: "oauth",
                 token: gitHubOauthToken
@@ -164,10 +166,17 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                 repo: repo.name
             }, function ( err, prs )
             {
-                var isPullRequest = !err && prs && prs.some( function ( pr )
+                if( err )
                 {
-                    return pr.head.sha === hash;
-                } );
+                    // log and continue assuming it is not a PR so at least it is saved
+                }
+                else
+                {
+                    isPullRequest = !err && prs && prs.some( function ( pr )
+                    {
+                        return pr.head.sha === hash;
+                    } );
+                }
 
                 var newCommit = new models.Commit( {
                     repo: {
