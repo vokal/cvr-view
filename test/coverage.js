@@ -58,6 +58,8 @@ module.exports = function ()
 
     it( "should validate repo exists under owner", function ( done )
     {
+        this.timeout( 5000 );
+
         request( server )
             .post( "/coverage" )
             .field( "commit", "123" )
