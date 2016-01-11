@@ -169,6 +169,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                 if( err )
                 {
                     // log and continue assuming it is not a PR so at least it is saved
+                    console.log( "Unable to get all PRs", repo.owner, repo.name, err );
                 }
                 else
                 {
