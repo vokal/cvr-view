@@ -60,6 +60,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
     var hashes = [];
     var commit = null;
     var cov = null;
+    var auth = null;
     var gitHubOauthToken = null;
 
     if( [ "lcov", "cobertura", "jacoco", "gocover" ].indexOf( coverageType ) === -1 )
@@ -168,8 +169,9 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
             {
                 if( err )
                 {
-                    // log and continue assuming it is not a PR so at least it is saved
-                    console.log( "Unable to get all PRs", repo.owner, repo.name, err );
+                    // log and continue so at least coverage is saved
+                    console.log( "Unable to get PRs for " + repo.owner + "/" + repo.name
+                        + " as " + auth.username + ", user's oauth token may have expired: " + err );
                 }
                 else
                 {
@@ -270,6 +272,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
         }
         models.User.getTokenForRepoFullName( repo.fullName, function ( err, tokenRes )
         {
+            auth =  tokenRes ? tokenRes.oauth : null;
             gitHubOauthToken = tokenRes ? tokenRes.oauth.token : null;
             saveCommit();
             setCommitStatus();

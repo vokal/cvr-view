@@ -5,11 +5,17 @@ var models = require( "../lib/models" );
 
 module.exports = function ( req, res, next )
 {
+    var oauth;
+    var status;
+
     var onSetPending = function ( err )
     {
         if( err )
         {
-            return res.status( 400 ).send( "Unable to set pending status" );
+            return res.status( 400 ).send( "Unable to set pending status to "
+                + status.user + "/" + status.repo + "/" + status.sha + " as "
+                + oauth.username
+                + ", user's oauth token may have expired or not have push access for the repo: " + err );
         }
 
         return res.status( 201 ).send( "Created status" );
@@ -36,7 +42,9 @@ module.exports = function ( req, res, next )
             return res.status( 400 ).send( "No permission to set status on " + pr.base.repo.full_name );
         }
 
-        var status = {
+        oauth = tokenRes.oauth;
+
+        status = {
             user: pr.base.user.login,
             repo: pr.base.repo.name,
             sha: pr.head.sha,
@@ -45,7 +53,7 @@ module.exports = function ( req, res, next )
             description: "code coverage pending"
         };
 
-        cvr.createGitHubStatus( tokenRes.oauth.token, status, onSetPending );
+        cvr.createGitHubStatus( oauth.token, status, onSetPending );
     };
 
     models.User.getTokenForRepoFullName( pr.base.repo.full_name, onGotAccessToken );
