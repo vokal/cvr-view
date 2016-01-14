@@ -15,7 +15,8 @@ module.exports = function ( req, res, next )
             return res.status( 400 ).send( "Unable to set pending status to "
                 + status.user + "/" + status.repo + "/" + status.sha + " as "
                 + oauth.username
-                + ", user's oauth token may have expired or not have push access for the repo: " + err );
+                + ", user's oauth token may have expired, not have push access for the repo, "
+                + "or the sha may not exist: " + err );
         }
 
         return res.status( 201 ).send( "Created status" );
