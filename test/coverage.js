@@ -124,4 +124,20 @@ module.exports = function ()
                 done( err );
             } );
     } );
+
+    it( "should abort pending coverage", function ( done )
+    {
+        request( server )
+            .post( "/coverage/abort" )
+            .field( "commit", "627786ba8f153d46e808c9b6c2755fa5ce38de6d" )
+            .field( "owner", "vokal" )
+            .field( "repo", "cvr-view" )
+            .field( "reason", "This was a test" )
+            .expect( 201 )
+            .end( function ( err, res )
+            {
+                assert.equal( res.text, "Status created" );
+                done( err );
+            } );
+    } );
 };

@@ -54,6 +54,7 @@ router.get( "/upload", require( "./upload" ) );
 router.get( "/:owner/:name/shield.svg", require( "./shield" ) );
 
 router.post( "/coverage", require( "./coverage" ) );
+router.post( "/coverage/abort", require( "./coverage-abort" ) );
 router.post( "/webhook", require( "./webhook" ) );
 
 router.get( "/auth/github", passport.authenticate( "github" ) );
