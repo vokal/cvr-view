@@ -76,39 +76,44 @@ router.get( "/auth/github/success", function ( req, res )
     }
 } );
 
-router.post( "/auth/github/token", function ( req, res, next )
+// this potentially allows using a lower permission access token to be promoted
+// to the permission level granted to cvr-view, but is currently used for testing
+if( process.env.NODE_ENV !== "production" )
 {
-    var token = req.body.token;
-
-    github.authenticate( {
-        type: "oauth",
-        token: token
-    } );
-
-    github.user.get( {}, function ( err, profile )
+    router.post( "/auth/github/token", function ( req, res, next )
     {
-        if( err )
-        {
-            if( err.code === 401 )
-            {
-                var err = new Error( "Invalid Token" );
-                err.status = 401;
-            }
+        var token = req.body.token;
 
-            return next( err );
-        }
+        github.authenticate( {
+            type: "oauth",
+            token: token
+        } );
 
-        var user = { token: token, profile: { username: profile.login } };
-        req.login( user, function ( err )
+        github.user.get( {}, function ( err, profile )
         {
-            if ( err )
+            if( err )
             {
+                if( err.code === 401 )
+                {
+                    var err = new Error( "Invalid Token" );
+                    err.status = 401;
+                }
+
                 return next( err );
             }
-            req.session.user = user;
-            return res.redirect( "/repos" );
+
+            var user = { token: token, profile: { username: profile.login } };
+            req.login( user, function ( err )
+            {
+                if ( err )
+                {
+                    return next( err );
+                }
+                req.session.user = user;
+                return res.redirect( "/repos" );
+            } );
         } );
     } );
-} );
+}
 
 module.exports = router;
