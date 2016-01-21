@@ -89,24 +89,6 @@ module.exports = function ( req, res, next )
             return next( err );
         }
 
-        if( !user )
-        {
-            user = new models.User({ oauth: {
-                provider: "github",
-                username: username
-            }});
-        }
-
-        if( user.oauth.token !== req.session.user.token )
-        {
-            user.oauth.token = req.session.user.token;
-
-            if( user.repos.length && !req.query.refresh )
-            {
-                user.save();
-            }
-        }
-
         if( user.repos.length && !req.query.refresh )
         {
             onUserRepos( null, user );
