@@ -49,7 +49,7 @@ router.get( "/repo/:owner/:name/:hash/:file(*)",
     auth.ensureAuthenticated,
     require( "./file" ) );
 
-router.get( "/logout", require( "./logout" ) );
+router.get( "/auth/sign-out", require( "./logout" ) );
 router.get( "/upload", require( "./upload" ) );
 router.get( "/:owner/:name/shield.svg", require( "./shield" ) );
 
