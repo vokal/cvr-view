@@ -1,10 +1,23 @@
 <div class="container">
 
-        <a href="/repos?refresh=1" class="btn-primary btn sync">
-            Sync Repos
-        </a>
+    <div class="clearfix">
+        <div class="col-sm-6">
+            <h1>{{title}}</h1>
+        </div>
 
-        <h1>{{title}}</h1>
+        <div class="col-sm-6">
+            <div class="pull-right h1-margin">
+                <div class="col-xs-4">
+                    <a href="/repos?refresh=1" class="btn-primary btn">
+                        Sync Repos
+                    </a>
+                </div>
+                <div class="col-xs-8">
+                    <input type="search" id="repo-search" class="form-control" placeholder="Search Repos">
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="row">
         <ul class="repos">
