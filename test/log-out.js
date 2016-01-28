@@ -19,7 +19,7 @@ module.exports = function ()
     it( "should exist and redirect", function ( done )
     {
         request( server )
-            .get( "/logout" )
+            .get( "/auth/sign-out" )
             .expect( 302, done );
     } );
 };
