@@ -13,7 +13,7 @@ module.exports = function ()
         done();
     } );
 
-    it( "should redirect to repos on succesful login", function ( done )
+    it( "should redirect on succesful login", function ( done )
     {
         agent
             .post( "/auth/github/token" )

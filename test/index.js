@@ -44,6 +44,8 @@ describe( "CVR", function ()
     describe( "Repo Details", require( "./repo-details" ) );
     describe( "Shields", require( "./shields" ) );
     describe( "Upload", require( "./upload" ) );
+    describe( "New Token", require( "./new-token" ) );
+    describe( "Delete Repo", require( "./delete-repo" ) );
     describe( "Log Out", require( "./log-out" ) );
     describe( "Auth Success", require( "./auth-success" ) );
     describe( "404", require( "./404" ) );
