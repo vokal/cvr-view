@@ -37,6 +37,7 @@ If required variables are missing a crash will occur.
 ### Optional Environment Variables
 
 - `GITHUB_ORGS_WHITELIST` Optional array of allowed GitHub orgs. If empty or omitted, all orgs are allowed.
+- `MAX_REPO_COMMIT_HISTORY` By default only the last 20 commits per repo are saved to conserve storage space.
 
 
 #### Create a GitHub Application
