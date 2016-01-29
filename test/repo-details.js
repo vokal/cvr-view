@@ -49,6 +49,16 @@ module.exports = function ()
             .expect( 200, done );
     } );
 
+    it( "should update cvr-view-seed repo settings", function ( done )
+    {
+        agent
+            .post( "/repo/vokal/cvr-view-seed/settings" )
+            .field( "minPassingLinePercent", 50 )
+            .field( "removePath", "" )
+            .field( "prependPath", "" )
+            .expect( 200, done );
+    } );
+
     it( "should load a cvr-view-seed file", function ( done )
     {
         agent
