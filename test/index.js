@@ -10,6 +10,8 @@ var mongoose = require( "mongoose" );
 
 describe( "CVR", function ()
 {
+    this.timeout( 3000 );
+
     var server;
     before( function ( done )
     {
