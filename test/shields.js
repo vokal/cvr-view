@@ -19,7 +19,7 @@ module.exports = function ()
     it( "should load a shield", function ( done )
     {
         request( server )
-            .get( "/vokal/cvr/shield.svg" )
+            .get( "/vokal/cvr-view-seed/shield.svg" )
             .expect( 200, done );
     } );
 

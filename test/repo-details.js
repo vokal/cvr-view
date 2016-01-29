@@ -13,25 +13,8 @@ module.exports = function ()
         done();
     } );
 
-    it( "should redirect from repos page", function ( done )
-    {
-        agent
-            .get( "/repos" )
-            .expect( 302, done );
-    } );
-
-    it( "should get a 401 with a bad token", function ( done )
-    {
-        agent
-            .post( "/auth/github/token" )
-            .field( "token", "notvalid" )
-            .expect( 401, done );
-    } );
-
     it( "should redirect to repos on succesful login", function ( done )
     {
-        this.timeout( 10000 );
-
         agent
             .post( "/auth/github/token" )
             .field( "token", process.env.GITHUB_TESTING_AUTH_TOKEN )
@@ -43,16 +26,7 @@ module.exports = function ()
             } );
     } );
 
-    it( "should load repos page", function ( done )
-    {
-        this.timeout( 30000 ); // this takes too long on the first load
-
-        agent
-            .get( "/repos" )
-            .expect( 200, done );
-    } );
-
-    it( "should activate the cvr-view-seed repo", function ( done )
+    it( "should load cvr-view-seed repo", function ( done )
     {
         this.timeout( 10000 );
 
@@ -61,8 +35,24 @@ module.exports = function ()
             .expect( 200 )
             .end( function ( err, res )
             {
-                assert.equal( /No coverage has been posted for this repo yet/.test( res.text ), true );
+                app.repoToken = res.text.match( /\/coverage\?token=([0-9a-z]*)&commit=:commit_hash/ )[ 1 ];
+                app.repoFile = res.text.match( /\/repo\/vokal\/cvr-view-seed\/[0-9a-z]*\/[^"]*/ )[ 0 ];
+                assert.equal( !!app.repoToken, true );
                 done( err );
             } );
+    } );
+
+    it( "should load cvr-view-seed repo settings", function ( done )
+    {
+        agent
+            .get( "/repo/vokal/cvr-view-seed/settings" )
+            .expect( 200, done );
+    } );
+
+    it( "should load a cvr-view-seed file", function ( done )
+    {
+        agent
+            .get( app.repoFile )
+            .expect( 200, done );
     } );
 };
