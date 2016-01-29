@@ -2,11 +2,14 @@
 
 **The easy open source way to privately host your code coverage.**
 
-CVR View is an Express application for hosting your code coverage results. This seed project includes steps below for setting up an instance once you clone this repo. If you'd like to host your coverage internally, or without paying for monthly services, CVR View might be for you.
+[![line cvr](https://cvr.vokal.io/vokal/cvr-view/shield.svg)](https://cvr.vokal.io/repo/vokal/cvr-view)
+
+
+CVR View is an Express application for hosting your code coverage results. If you'd like to host your coverage internally, or without paying for monthly services, CVR View might be for you.
 
 To get started, using the [seed project](https://github.com/vokal/cvr-view-seed) is recommended to make your future updating as simple as a new `npm install`.
 
-MIT Licensed
+#### MIT Licensed
 
 
 ## Configuration
