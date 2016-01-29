@@ -112,7 +112,8 @@ module.exports = function ( req, res, next )
                     return {
                         owner: r.owner.login,
                         name: r.name,
-                        fullName: r.full_name
+                        fullName: r.full_name,
+                        permissions: r.permissions
                     };
                 } );
 
