@@ -3,89 +3,102 @@
 var cvr = require( "cvr" );
 var models = require( "../lib/models" );
 var env = require( "../lib/env" );
+var a = require( "async" );
+
+var createError = function ( message, status )
+{
+    var err = new Error( message );
+    err.status = status;
+    return err;
+};
 
 module.exports = function ( req, res, next )
 {
-    var onRepo = function ( err, repo )
-    {
-        if( err )
-        {
-            return next( err );
-        }
+    var repo = null;
+    var commit = null;
+    var cov = null;
+    var fileCov = null;
 
-        if( !repo )
+    a.waterfall( [
+        function ( done )
         {
-            return res.status( 404 );
-        }
+            models.Repo.findByOwnerAndName( req.params.owner, req.params.name, done );
+        },
+        function ( _repo, done )
+        {
+            repo = _repo;
 
-        var onCommit = function ( err, commit )
-        {
-            if( err )
+            if( !repo )
             {
-                return next( err );
+                throw createError( "Repo not found", 404 );
             }
+
+            models.Commit.findCommit( repo.owner, repo.name, req.params.hash, done );
+        },
+        function ( _commit, done )
+        {
+            commit = _commit;
 
             if( !commit )
             {
-                return res.status( 404 ).end();
+                throw createError( "Commit not found", 404 );
             }
 
-            var onCov = function ( err, cov )
+            cvr.getCoverage( commit.coverage, commit.coverageType, done );
+        },
+        function ( _cov, done )
+        {
+            cov = _cov;
+            fileCov = cvr.getFileCoverage( cov, req.params.file );
+
+            if( !fileCov )
             {
-                var fileCov = cvr.getFileCoverage( cov, req.params.file );
+                throw createError( "File not found in coverage: " + req.params.file, 404 );
+            }
 
-                if( !fileCov )
-                {
-                    var file404 = new Error( "File not found in coverage: " + req.params.file );
-                    file404.status = 404;
-                    return next( file404 );
-                }
+            cvr.getGitHubFile( req.session.user.token, req.params.owner, req.params.name,
+                req.params.hash, req.params.file, done );
+        }
+    ], function ( err, content )
+    {
+        if( err )
+        {
+            var errMessage = err;
+            try
+            {
+                errMessage = JSON.parse( err.message ).message;
+            }
+            catch ( err )
+            {
+                // it isn't JSON
+            }
 
-                var onFileContent = function ( err, content )
-                {
-                    if( err )
-                    {
-                        var errMessage = JSON.parse( err.message ).message;
-                        if( errMessage === "Not Found" )
-                        {
-                            var path404 = new Error( "The path " + req.params.file
-                                + " does not exist at commit " + req.params.hash
-                                + ". Is the path correctly based from the project root?" );
-                            path404.status = 404;
-                            return next( path404 );
-                        }
-                        if( errMessage.indexOf( "No commit found for the ref" ) > -1 )
-                        {
-                            var path404 = new Error( "The hash " + req.params.hash + " does not exist" );
-                            path404.status = 404;
-                            return next( path404 );
-                        }
-                        return next( new Error( errMessage ) );
-                    }
+            if( errMessage === "Not Found" )
+            {
+                return next( createError( "The path " + req.params.file
+                    + " does not exist at commit " + req.params.hash
+                    + ". Is the path correctly based from the project root?", 404 ) );
+            }
 
-                    res.render( "coverage", {
-                        layout: "layout.html",
-                        repo: repo,
-                        cov: cov,
-                        hash: req.params.hash,
-                        fileName: req.params.file,
-                        extension: cvr.getFileType( req.params.file ),
-                        linesCovered: cvr.linesCovered( fileCov ).join( "," ),
-                        linesMissing: cvr.linesMissing( fileCov ).join( "," ),
-                        source: content,
-                        authed: true
-                     } );
-                };
+            if( errMessage.indexOf( "No commit found for the ref" ) > -1 )
+            {
+                return next( createError( "The hash " + req.params.hash + " does not exist", 404 ) );
+            }
 
-                cvr.getGitHubFile( req.session.user.token, req.params.owner, req.params.name,
-                    req.params.hash, req.params.file, onFileContent );
-            };
+            return next( err.status ? err : new Error( errMessage ) );
+        }
 
-            cvr.getCoverage( commit.coverage, commit.coverageType, onCov );
-        };
-
-        models.Commit.findCommit( repo.owner, repo.name, req.params.hash, onCommit );
-    };
-
-    models.Repo.findByOwnerAndName( req.params.owner, req.params.name, onRepo );
+        res.render( "coverage", {
+            layout: "layout.html",
+            repo: repo,
+            cov: cov,
+            hash: req.params.hash,
+            fileName: req.params.file,
+            extension: cvr.getFileType( req.params.file ),
+            linesCovered: cvr.linesCovered( fileCov ).join( "," ),
+            linesMissing: cvr.linesMissing( fileCov ).join( "," ),
+            source: content,
+            authed: true
+         } );
+    } );
 };
