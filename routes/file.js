@@ -30,7 +30,7 @@ module.exports = function ( req, res, next )
 
             if( !repo )
             {
-                throw createError( "Repo not found", 404 );
+                return done( createError( "Repo not found", 404 ) );
             }
 
             models.Commit.findCommit( repo.owner, repo.name, req.params.hash, done );
@@ -41,7 +41,7 @@ module.exports = function ( req, res, next )
 
             if( !commit )
             {
-                throw createError( "Commit not found", 404 );
+                return done( createError( "Commit not found", 404 ) );
             }
 
             cvr.getCoverage( commit.coverage, commit.coverageType, done );
@@ -53,7 +53,7 @@ module.exports = function ( req, res, next )
 
             if( !fileCov )
             {
-                throw createError( "File not found in coverage: " + req.params.file, 404 );
+                return done( createError( "File not found in coverage: " + req.params.file, 404 ) );
             }
 
             cvr.getGitHubFile( req.session.user.token, req.params.owner, req.params.name,

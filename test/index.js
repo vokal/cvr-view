@@ -20,9 +20,9 @@ describe( "CVR", function ()
 
         a.series( [
             function ( done ) { conn.on( "open", done ); },
-            function ( done ) { conn.db.dropCollection( "repos", function () { done( null ); } ); },
-            function ( done ) { conn.db.dropCollection( "commits", function () { done( null ); } ); },
-            function ( done ) { conn.db.dropCollection( "users", function () { done( null ); } ); }
+            function ( done ) { conn.db.dropCollection( "repos", function () { done(); } ); },
+            function ( done ) { conn.db.dropCollection( "commits", function () { done(); } ); },
+            function ( done ) { conn.db.dropCollection( "users", function () { done(); } ); }
         ], function ()
         {
             app( function ( err, res )
