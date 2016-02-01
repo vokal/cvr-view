@@ -27,7 +27,7 @@ module.exports = function ( req, res, next )
             repo.removePath = req.body.removePath;
             repo.prependPath = req.body.prependPath;
 
-            repo.save( function ( err )
+            return repo.save( function ( err )
             {
                 if( err )
                 {

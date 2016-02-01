@@ -60,7 +60,10 @@ router.post( "/webhook", require( "./webhook" ) );
 router.get( "/auth/github", passport.authenticate( "github" ) );
 
 router.get( "/auth/github/callback",
-  passport.authenticate( "github", { successRedirect: "/auth/github/success", failureRedirect: "/" } ) );
+  passport.authenticate( "github", {
+      successRedirect: "/auth/github/success",
+      failureRedirect: "/"
+  } ) );
 
 router.get( "/auth/github/success", function ( req, res )
 {
@@ -76,44 +79,6 @@ router.get( "/auth/github/success", function ( req, res )
     }
 } );
 
-// this potentially allows using a lower permission access token to be promoted
-// to the permission level granted to cvr-view, but is currently used for testing
-if( process.env.NODE_ENV !== "production" )
-{
-    router.post( "/auth/github/token", function ( req, res, next )
-    {
-        var token = req.body.token;
-
-        github.authenticate( {
-            type: "oauth",
-            token: token
-        } );
-
-        github.user.get( {}, function ( err, profile )
-        {
-            if( err )
-            {
-                if( err.code === 401 )
-                {
-                    var err = new Error( "Invalid Token" );
-                    err.status = 401;
-                }
-
-                return next( err );
-            }
-
-            var user = { token: token, profile: { username: profile.login } };
-            req.login( user, function ( err )
-            {
-                if ( err )
-                {
-                    return next( err );
-                }
-                req.session.user = user;
-                return res.redirect( "/repos" );
-            } );
-        } );
-    } );
-}
+router.post( "/auth/github/token", require( "./auth-github-token" ) );
 
 module.exports = router;

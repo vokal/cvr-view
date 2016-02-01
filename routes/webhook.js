@@ -23,13 +23,14 @@ module.exports = function ( req, res, next )
     };
 
     var pr = req.body.pull_request;
+    var action = req.body.action;
 
-    if( !pr || [ "opened", "synchronize" ].indexOf( req.body.action ) === -1 )
+    if( !pr || [ "opened", "synchronize" ].indexOf( action ) === -1 )
     {
         return res.status( 202 ).send( "Not a pull request" );
     }
 
-    var title = req.body.pull_request.title;
+    var title = pr.title;
 
     if( title.indexOf( "[ci skip]" ) >= 0 || title.indexOf( "[skip ci]" ) >= 0 )
     {

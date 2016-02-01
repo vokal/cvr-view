@@ -89,6 +89,11 @@ module.exports = function ( req, res, next )
             return next( err );
         }
 
+        if( !user )
+        {
+            return res.redirect( "/" );
+        }
+
         if( user.repos.length && !req.query.refresh )
         {
             onUserRepos( null, user );
@@ -107,7 +112,8 @@ module.exports = function ( req, res, next )
                     return {
                         owner: r.owner.login,
                         name: r.name,
-                        fullName: r.full_name
+                        fullName: r.full_name,
+                        permissions: r.permissions
                     };
                 } );
 

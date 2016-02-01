@@ -20,46 +20,49 @@ module.exports = function ()
             .expect( 302, done );
     } );
 
+    it( "should get a 401 with a bad token", function ( done )
+    {
+        agent
+            .post( "/auth/github/token" )
+            .field( "token", "notvalid" )
+            .expect( 401, done );
+    } );
+
     it( "should redirect to repos on succesful login", function ( done )
     {
+        this.timeout( 10000 );
+
         agent
             .post( "/auth/github/token" )
             .field( "token", process.env.GITHUB_TESTING_AUTH_TOKEN )
             .expect( 302 )
             .end( function ( err, res )
             {
-                assert.equal( res.headers.location, "/repos" );
+                assert.equal( res.headers.location, "/auth/github/success" );
                 done( err );
             } );
     } );
 
     it( "should load repos page", function ( done )
     {
+        this.timeout( 30000 ); // this takes too long on the first load
+
         agent
             .get( "/repos" )
             .expect( 200, done );
     } );
 
-    it( "should load cvr-view repo", function ( done )
+    it( "should activate the cvr-view-seed repo", function ( done )
     {
         this.timeout( 10000 );
 
         agent
-            .get( "/repo/vokal/cvr-view" )
-            .expect( 200, done );
-    } );
-
-    it( "should load cvr-view repo settings", function ( done )
-    {
-        agent
-            .get( "/repo/vokal/cvr-view/settings" )
-            .expect( 200, done );
-    } );
-
-    it( "should load a cvr-view file", function ( done )
-    {
-        agent
-            .get( "/repo/vokal/cvr-view/4b07d8b911cef066a1f06a49a91ffa7c68e66b35/app.js" )
-            .expect( 200, done );
+            .get( "/repo/vokal/cvr-view-seed" )
+            .expect( 200 )
+            .end( function ( err, res )
+            {
+                assert.equal( /No coverage has been posted for this repo yet/.test( res.text ), true );
+                done( err );
+            } );
     } );
 };
