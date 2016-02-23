@@ -15,7 +15,7 @@ describe( "CVR", function ()
     var server;
     before( function ( done )
     {
-        this.timeout( 5000 );
+        this.timeout( 10000 );
         var conn = mongoose.createConnection( env.dbConn );
 
         a.series( [
@@ -23,8 +23,13 @@ describe( "CVR", function ()
             function ( done ) { conn.db.dropCollection( "repos", function () { done(); } ); },
             function ( done ) { conn.db.dropCollection( "commits", function () { done(); } ); },
             function ( done ) { conn.db.dropCollection( "users", function () { done(); } ); }
-        ], function ()
+        ], function ( err )
         {
+            if( err )
+            {
+                console.log( err );
+            }
+
             app( function ( err, res )
             {
                  server = res;
