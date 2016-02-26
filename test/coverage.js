@@ -107,6 +107,24 @@ module.exports = function ()
             } );
     } );
 
+    it( "should validate that commit exists on GitHub", function ( done )
+    {
+        this.timeout( 10000 );
+
+        request( server )
+            .post( "/coverage" )
+            .field( "commit", "thisisnotacommit" )
+            .field( "owner", "vokal" )
+            .field( "repo", "cvr-view-seed" )
+            .attach( "coverage", "test/assets/lcov.info" )
+            .expect( 400 )
+            .end( function ( err, res )
+            {
+                assert.equal( res.text, "The commit thisisnotacommit does not exist" );
+                done( err );
+            } );
+    } );
+
     it( "should save coverage", function ( done )
     {
         this.timeout( 10000 );

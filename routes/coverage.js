@@ -157,11 +157,6 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
         {
             var isPullRequest = false;
 
-            github.authenticate( {
-                type: "oauth",
-                token: gitHubOauthToken
-            } );
-
             github.pullRequests.getAll( {
                 user: repo.owner,
                 repo: repo.name
@@ -247,7 +242,31 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                 coverage = cvr.prependPath( coverage, prependPath, coverageType );
             }
 
-            models.Commit.findCommitList( repo.owner, repo.name, done );
+            models.User.getTokenForRepoFullName( repo.fullName, done );
+        },
+        function ( tokenRes, done )
+        {
+            auth = tokenRes ? tokenRes.oauth : null;
+            gitHubOauthToken = tokenRes ? tokenRes.oauth.token : null;
+
+            github.authenticate( {
+                type: "oauth",
+                token: gitHubOauthToken
+            } );
+
+            github.repos.getCommits( {
+                user: repo.owner,
+                repo: repo.name,
+                sha: hash
+            }, function ( err, commits )
+            {
+                if( err )
+                {
+                    return done( new Error( "The commit " + hash + " does not exist" ) );
+                }
+
+                models.Commit.findCommitList( repo.owner, repo.name, done );
+            } );
         },
         function ( $hashes, done )
         {
@@ -270,18 +289,8 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
         {
             return callback( err );
         }
-        models.User.getTokenForRepoFullName( repo.fullName, function ( err, tokenRes )
-        {
-            auth =  tokenRes ? tokenRes.oauth : null;
-            gitHubOauthToken = tokenRes ? tokenRes.oauth.token : null;
-            saveCommit();
-            setCommitStatus();
-
-            if( err )
-            {
-                console.log( err.message );
-            }
-        } );
+        saveCommit();
+        setCommitStatus();
     } );
 
 };
