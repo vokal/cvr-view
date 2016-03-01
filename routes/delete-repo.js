@@ -13,7 +13,7 @@ module.exports = function ( req, res, next )
             return next( err );
         }
 
-        cvr.deleteGitHubHook( req.session.user.token,
+        cvr.gitHub.deleteHook( req.session.user.token,
             req.params.owner, req.params.name, env.host + "webhook", function ( err )
         {
             if( err )

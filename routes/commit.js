@@ -32,7 +32,7 @@ module.exports = function ( req, res, next )
                 repo.save();
             }
 
-            cvr.createGitHubHook( req.session.user.token, repo.owner, repo.name, env.host + "webhook", function ( err )
+            cvr.gitHub.createHook( req.session.user.token, repo.owner, repo.name, env.host + "webhook", function ( err )
             {
                 if( err )
                 {

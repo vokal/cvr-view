@@ -100,7 +100,7 @@ module.exports = function ( req, res, next )
         }
         else
         {
-            cvr.getGitHubRepos( req.session.user.token, function ( err, repos )
+            cvr.gitHub.getRepos( req.session.user.token, function ( err, repos )
             {
                 if( err )
                 {

@@ -55,7 +55,7 @@ module.exports = function ( req, res, next )
             description: "code coverage pending"
         };
 
-        cvr.createGitHubStatus( oauth.token, status, onSetPending );
+        cvr.gitHub.createStatus( oauth.token, status, onSetPending );
     };
 
     models.User.getTokenForRepoFullName( pr.base.repo.full_name, onGotAccessToken );
