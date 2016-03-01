@@ -46,7 +46,7 @@ module.exports = function ( req, res, next )
             description: options.reason || "coverage aborted"
         };
 
-        cvr.createGitHubStatus( options.gitHubOauthToken, status, onDone );
+        cvr.gitHub.createStatus( options.gitHubOauthToken, status, onDone );
     };
 
     var onOauthToken = function ( err, tokenRes )

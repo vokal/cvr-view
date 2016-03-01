@@ -56,7 +56,7 @@ module.exports = function ( req, res, next )
                 return done( createError( "File not found in coverage: " + req.params.file, 404 ) );
             }
 
-            cvr.getGitHubFile( req.session.user.token, req.params.owner, req.params.name,
+            cvr.gitHub.getFile( req.session.user.token, req.params.owner, req.params.name,
                 req.params.hash, req.params.file, done );
         }
     ], function ( err, content )

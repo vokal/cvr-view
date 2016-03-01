@@ -131,7 +131,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
             target_url: env.host + "repo/" + repo.owner + "/" + repo.name + "/" + hash
         };
 
-        cvr.createGitHubStatus( gitHubOauthToken, status, function ( err )
+        cvr.gitHub.createStatus( gitHubOauthToken, status, function ( err )
             {
                 // another silent failure?
                 if( err )
