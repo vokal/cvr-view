@@ -1,14 +1,17 @@
 image: docker.vokal.io/web-testing
-env:
-    - CVR_TOKEN=$$cvrToken
-    - GITHUB_CLIENTID=$$gitHubClientId
-    - GITHUB_CLIENTSECRET=$$gitHubClientSecret
-    - DB_CONN=$$mongoConn
+build:
+  image: registry.vokal.io/web-testing
+  environment:
+    - REPO_OWNER=vokal
+    - REPO_NAME=cvr-view
     - GITHUB_CALLBACKURL=https://cvr.vokal.io/auth/github/callback
     - GITHUB_ORGS_WHITELIST=vokal
     - HOST=https://cvr.vokal.io/
-    - GITHUB_TESTING_AUTH_TOKEN=$$gitHubTestingAuthToken
-script:
+    - GITHUB_CLIENTID=$$GITHUB_CLIENTID
+    - GITHUB_CLIENTSECRET=$$GITHUB_CLIENTSECRET
+    - DB_CONN=$$DB_CONN
+    - GITHUB_TESTING_AUTH_TOKEN=$$GITHUB_TESTING_AUTH_TOKEN
+  commands:
     - npm install --silent -g istanbul
     - npm install --silent
     - chmod +x run-build.sh
