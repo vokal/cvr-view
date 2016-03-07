@@ -88,7 +88,7 @@ module.exports = function ( req, res, next )
             res.render( "commit", {
                 layout: "layout.html",
                 repo: repo,
-                commit: repo.commits[ 0 ] || commit,
+                commit: commit,
                 cov: cov,
                 hash: commit.hash,
                 isPullRequest: commit.isPullRequest,

@@ -9,6 +9,7 @@
 @dark-batter: #ebb460;
 @butter: #fde860;
 @syrup: #7f4a46;
+@smoke-gray: #F8F8F8;
 
 body {
     padding-top: 70px;
@@ -89,6 +90,23 @@ body {
     line-height: 40px;
     padding: 0 0 0 50px;
     margin: 5px 20px 5px 0;
+}
+
+.dashboard .col {
+    text-align: center;
+    font-weight: bold;
+    padding: 6px 3px;
+
+    div {
+        background: @smoke-gray;
+        padding: 10px;
+    }
+
+    .number {
+        font-size: 4rem;
+        line-height: 1;
+        display: block;
+    }
 }
 
 .repos {

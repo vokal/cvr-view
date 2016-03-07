@@ -146,11 +146,30 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
         var linePercent = cvr.getLineCoveragePercent( cov );
         repo.lastLinePercent = linePercent;
 
-        if( commit )
+        var linesFound = 0;
+        var linesHit = 0;
+
+        cov.forEach( ( c ) =>
+        {
+            linesFound += c.lines.found;
+            linesHit += c.lines.hit;
+        } );
+
+        repo.lastLinesFound = linesFound;
+        repo.lastLinesHit = linesHit;
+
+        var updateCommit = function ()
         {
             commit.coverage = coverage;
             commit.linePercent = linePercent;
+            commit.linesFound = linesFound;
+            commit.linesHit = linesHit;
             commit.created = new Date();
+        };
+
+        if( commit )
+        {
+            updateCommit();
             commit.save( callback );
         }
         else
@@ -176,7 +195,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                     } );
                 }
 
-                var newCommit = new models.Commit( {
+                commit = new models.Commit( {
                     repo: {
                         owner: repo.owner,
                         name: repo.name,
@@ -184,14 +203,13 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
                         provider: repo.provider
                     },
                     hash: hash,
-                    coverage: coverage,
-                    linePercent: linePercent,
                     coverageType: coverageType,
-                    isPullRequest: isPullRequest,
-                    created: new Date()
+                    isPullRequest: isPullRequest
                 } );
 
-                models.Commit.pushCommit( newCommit, callback );
+                updateCommit();
+
+                models.Commit.pushCommit( commit, callback );
             } );
         }
 
