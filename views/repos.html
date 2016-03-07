@@ -19,6 +19,27 @@
         </div>
     </div>
 
+    <div class="row dashboard">
+        <div class="col col-sm-4">
+            <div>
+                <span class="number">{{numberFormatted linesFound }}</span>
+                Lines
+            </div>
+        </div>
+        <div class="col col-sm-4">
+            <div>
+                <span class="number">{{numberFormatted linesHit }}</span>
+                Covered Lines
+            </div>
+        </div>
+        <div class="col col-sm-4">
+            <div>
+                <span class="number">{{commitPercentFormatted linesPercent }}</span>
+                Coverage
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <ul class="repos">
         {{#each activeRepos}}

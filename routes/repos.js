@@ -7,79 +7,75 @@ module.exports = function ( req, res, next )
 {
     var username = req.session.user.profile.username;
 
-    var onActiveRepos = function ( err, user )
+    var onActiveRepos = function ( err, user, activeRepos )
     {
         if( err )
         {
             return next( err );
         }
 
+        var linesFound = activeRepos.reduce( ( acc, r ) => acc + r.linesFound, 0 );
+        var linesHit = activeRepos.reduce( ( acc, r ) => acc + r.linesHit, 0 );
+
         res.render( "repos", {
             layout: "layout.html",
             title: "Repos",
             repos: user.repos,
-            activeRepos: user.activeRepos,
-            authed: true } );
+            activeRepos: activeRepos,
+            linesFound: linesFound,
+            linesHit: linesHit,
+            linesPercent: 100 * linesHit / linesFound,
+            authed: true
+        } );
     };
 
     var onUserRepos = function ( err, user )
     {
-        user.save( function ( err )
+        user.repos = user.repos.sort( function ( a, b )
+        {
+            return a.fullName.toLowerCase() > b.fullName.toLowerCase() ? 1
+                : a.fullName.toLowerCase() < b.fullName.toLowerCase() ? -1
+                : 0;
+        } );
+
+        var repoFullNames = user.repos.map( function ( r )
+        {
+            return r.fullName;
+        } );
+
+        models.Repo.findFullNameInArray( repoFullNames, function ( err, activeRepos )
         {
             if( err )
             {
                 return next( err );
             }
 
-            if( req.query.refresh )
-            {
-                return res.redirect( "/repos" );
-            }
+            var userActiveRepos = [];
 
-            user.repos = user.repos.sort( function ( a, b )
+            user.repos.forEach( function ( userRepo )
             {
-                return a.fullName.toLowerCase() > b.fullName.toLowerCase() ? 1
-                    : a.fullName.toLowerCase() < b.fullName.toLowerCase() ? -1
-                    : 0;
-            } );
-
-            var repoFullNames = user.repos.map( function ( r )
-            {
-                return r.fullName;
-            } );
-
-            models.Repo.findFullNameInArray( repoFullNames, function ( err, activeRepos )
-            {
-                if( err )
+                var activeRepo = activeRepos.filter( function ( activeRepo )
                 {
-                    return next( err );
+                    return activeRepo.fullName === userRepo.fullName;
+                } )[ 0 ];
+
+                if( activeRepo )
+                {
+                    userRepo.minPassingLinePercent = activeRepo.minPassingLinePercent;
+                    userRepo.linePercent = activeRepo.lastLinePercent;
+                    userRepo.linesFound = activeRepo.lastLinesFound;
+                    userRepo.linesHit = activeRepo.lastLinesHit;
+                    userActiveRepos.push( userRepo );
                 }
-
-                user.activeRepos = [];
-
-                user.repos.forEach( function ( userRepo )
-                {
-                    var activeRepo = activeRepos.filter( function ( activeRepo )
-                    {
-                        return activeRepo.fullName === userRepo.fullName;
-                    } )[ 0 ];
-
-                    if( activeRepo )
-                    {
-                        userRepo.minPassingLinePercent = activeRepo.minPassingLinePercent;
-                        userRepo.linePercent = activeRepo.lastLinePercent;
-                        user.activeRepos.push( userRepo );
-                    }
-                } );
-
-                user.repos = user.repos.filter( function ( userRepo )
-                {
-                    return !userRepo.isActive;
-                } );
-
-                onActiveRepos( null, user );
             } );
-        });
+
+            user.repos = user.repos.filter( function ( userRepo )
+            {
+                return !userRepo.isActive;
+            } );
+
+            onActiveRepos( null, user, userActiveRepos );
+        } );
     };
 
     var onUser = function ( err, user )
@@ -117,7 +113,20 @@ module.exports = function ( req, res, next )
                     };
                 } );
 
-                onUserRepos( null, user );
+                user.save( function ( err )
+                {
+                    if( err )
+                    {
+                        return next( err );
+                    }
+
+                    if( req.query.refresh )
+                    {
+                        return res.redirect( "/repos" );
+                    }
+
+                    onUserRepos( null, user );
+                } );
             } );
         }
     };
