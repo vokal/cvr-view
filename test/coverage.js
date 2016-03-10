@@ -1,24 +1,24 @@
 "use strict";
 
+var util = require( "util" );
 var assert = require( "assert" );
 var request = require( "supertest" );
-var app = require( "./server" );
+var app = require( "../app" );
+var nock = require( "nock" );
+var commit = "558bc5aa45d591b3cdfea80af29e7ffb66ff55f1";
 
 module.exports = function ()
 {
-    var server;
+    var agent;
     before( function ( done )
     {
-        app( function ( err, res )
-        {
-             server = res;
-             done( err );
-        } );
+        agent = request.agent( app );
+        done();
     } );
 
     it( "should validate posting coverage", function ( done )
     {
-        request( server )
+        agent
             .post( "/coverage" )
             .expect( 400 )
             .end( function ( err, res )
@@ -30,7 +30,7 @@ module.exports = function ()
 
     it( "should validate repo is required", function ( done )
     {
-        request( server )
+        agent
             .post( "/coverage" )
             .field( "commit", "123" )
             .expect( 400 )
@@ -43,7 +43,7 @@ module.exports = function ()
 
     it( "should validate token", function ( done )
     {
-        request( server )
+        agent
             .post( "/coverage" )
             .field( "commit", "123" )
             .field( "token", "123" )
@@ -60,7 +60,7 @@ module.exports = function ()
     {
         this.timeout( 5000 );
 
-        request( server )
+        agent
             .post( "/coverage" )
             .field( "commit", "123" )
             .field( "owner", "123" )
@@ -76,7 +76,7 @@ module.exports = function ()
 
     it( "should validate coverage has content", function ( done )
     {
-        request( server )
+        agent
             .post( "/coverage" )
             .field( "commit", "123" )
             .field( "owner", "123" )
@@ -92,7 +92,7 @@ module.exports = function ()
 
     it( "should validate coverage has a valid type", function ( done )
     {
-        request( server )
+        agent
             .post( "/coverage" )
             .field( "commit", "123" )
             .field( "owner", "123" )
@@ -109,13 +109,11 @@ module.exports = function ()
 
     it( "should validate that commit exists on GitHub", function ( done )
     {
-        this.timeout( 10000 );
-
-        request( server )
+        agent
             .post( "/coverage" )
             .field( "commit", "thisisnotacommit" )
             .field( "owner", "vokal" )
-            .field( "repo", "cvr-view-seed" )
+            .field( "repo", "cvr-view-test" )
             .attach( "coverage", "test/assets/lcov.info" )
             .expect( 400 )
             .end( function ( err, res )
@@ -127,13 +125,19 @@ module.exports = function ()
 
     it( "should save coverage", function ( done )
     {
-        this.timeout( 10000 );
+        nock( "https://api.github.com" )
+            .get( util.format( "/repos/vokal/cvr-view-test/commits?sha=%s&access_token=test", commit ) )
+            .reply( 200 )
+            .get( "/repos/vokal/cvr-view-test/pulls?access_token=test" )
+            .reply( 200, [ { head: { sha: commit } } ] )
+            .post( util.format( "/repos/vokal/cvr-view-test/statuses/%s?access_token=test", commit ) )
+            .reply( 201 );
 
-        request( server )
+        agent
             .post( "/coverage" )
-            .field( "commit", "13a66297be32769cc2e2ecc8ca7146d717708b5f" )
+            .field( "commit", commit )
             .field( "owner", "vokal" )
-            .field( "repo", "cvr-view-seed" )
+            .field( "repo", "cvr-view-test" )
             .attach( "coverage", "test/assets/lcov.info" )
             .expect( 201 )
             .end( function ( err, res )
@@ -145,11 +149,15 @@ module.exports = function ()
 
     it( "should abort pending coverage", function ( done )
     {
-        request( server )
+        nock( "https://api.github.com" )
+            .post( util.format( "/repos/vokal/cvr-view-test/statuses/%s?access_token=test", commit ) )
+            .reply( 200 );
+
+        agent
             .post( "/coverage/abort" )
-            .field( "commit", "13a66297be32769cc2e2ecc8ca7146d717708b5f" )
+            .field( "commit", "558bc5aa45d591b3cdfea80af29e7ffb66ff55f1" )
             .field( "owner", "vokal" )
-            .field( "repo", "cvr-view-seed" )
+            .field( "repo", "cvr-view-test" )
             .field( "reason", "This was a test" )
             .expect( 201 )
             .end( function ( err, res )

@@ -2,30 +2,27 @@
 
 var assert = require( "assert" );
 var request = require( "supertest" );
-var app = require( "./server" );
+var app = require( "../app" );
 
 module.exports = function ()
 {
-    var server;
+    var agent;
     before( function ( done )
     {
-        app( function ( err, res )
-        {
-             server = res;
-             done( err );
-        } );
+        agent = request.agent( app );
+        done();
     } );
 
     it( "should load a shield", function ( done )
     {
-        request( server )
-            .get( "/vokal/cvr-view-seed/shield.svg" )
+        agent
+            .get( "/vokal/cvr-view-test/shield.svg" )
             .expect( 200, done );
     } );
 
     it( "should 404 a shield on non-existing repo", function ( done )
     {
-        request( server )
+        agent
             .get( "/vokal/notthedroidsyouarelookingfor/shield.svg" )
             .expect( 404, done );
     } );

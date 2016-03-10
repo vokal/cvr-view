@@ -2,24 +2,22 @@
 
 var assert = require( "assert" );
 var request = require( "supertest" );
-var app = require( "./server" );
+var app = require( "../app" );
 var fs = require( "fs" );
+var nock = require( "nock" );
 
 module.exports = function ()
 {
-    var server;
+    var agent;
     before( function ( done )
     {
-        app( function ( err, res )
-        {
-             server = res;
-             done( err );
-        } );
+        agent = request.agent( app );
+        done();
     } );
 
     it( "should reject a non-PR request", function ( done )
     {
-        request( server )
+        agent
             .post( "/webhook" )
             .expect( 202 )
             .end( function ( err, res )
@@ -31,7 +29,11 @@ module.exports = function ()
 
     it( "should accept a sync hook", function ( done )
     {
-        request( server )
+        nock( "https://api.github.com" )
+            .post( "/repos/vokal/cvr-view-test/statuses/558bc5aa45d591b3cdfea80af29e7ffb66ff55f1?access_token=test" )
+            .reply( 201 );
+
+        agent
             .post( "/webhook" )
             .set( "Content-Type", "application/json" )
             .send( fs.readFileSync( "./test/assets/webhook-synchronize.json" ).toString() )
@@ -48,7 +50,7 @@ module.exports = function ()
         var hook = JSON.parse( fs.readFileSync( "./test/assets/webhook-synchronize.json" ).toString() );
         hook.pull_request.title += "[ci skip]";
 
-        request( server )
+        agent
             .post( "/webhook" )
             .set( "Content-Type", "application/json" )
             .send( JSON.stringify( hook ) )

@@ -14,7 +14,7 @@
       "type": "User",
       "site_admin": false
     },
-    "body": "@foresmac pulling up new dep",
+    "body": "pulling up new dep",
     "created_at": "2015-09-10T17:51:48Z",
     "updated_at": "2015-09-10T18:18:21Z",
     "closed_at": null,
@@ -25,7 +25,7 @@
     "head": {
       "label": "jrit:master",
       "ref": "master",
-      "sha": "13a66297be32769cc2e2ecc8ca7146d717708b5f",
+      "sha": "558bc5aa45d591b3cdfea80af29e7ffb66ff55f1",
       "user": {
         "login": "jrit",
         "id": 1255823,
@@ -35,8 +35,8 @@
       },
       "repo": {
         "id": 35064431,
-        "name": "cvr-view-seed",
-        "full_name": "jrit/cvr-view-seed",
+        "name": "cvr-view-test",
+        "full_name": "jrit/cvr-view-test",
         "owner": {
           "login": "jrit",
           "id": 1255823,
@@ -59,8 +59,8 @@
       },
       "repo": {
         "id": 35064414,
-        "name": "cvr-view-seed",
-        "full_name": "vokal/cvr-view-seed",
+        "name": "cvr-view-test",
+        "full_name": "vokal/cvr-view-test",
         "owner": {
           "login": "vokal",
           "id": 375026,
