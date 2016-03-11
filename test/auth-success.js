@@ -2,23 +2,21 @@
 
 var assert = require( "assert" );
 var request = require( "supertest" );
-var app = require( "./server" );
+var nock = require( "nock" );
+var app = require( "../app" );
 
 module.exports = function ()
 {
-    var server;
+    var agent;
     before( function ( done )
     {
-        app( function ( err, res )
-        {
-             server = res;
-             done( err );
-        } );
+        agent = request.agent( app );
+        done();
     } );
 
     it( "should redirect from the page", function ( done )
     {
-        request( server )
+        agent
             .get( "/auth/github/success" )
             .expect( 302 )
             .end( function ( err, res )
@@ -30,7 +28,11 @@ module.exports = function ()
 
     it( "should fail token auth when invalid", function ( done )
     {
-        request( server )
+        nock( "https://api.github.com" )
+            .get( "/user?access_token=123" )
+            .reply( 401 );
+
+        agent
             .post( "/auth/github/token" )
             .field( "token", "123" )
             .expect( 401, done );

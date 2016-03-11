@@ -80,7 +80,7 @@ module.exports = function ( req, res, next )
                     + ". Is the path correctly based from the project root?", 404 ) );
             }
 
-            if( errMessage.indexOf( "No commit found for the ref" ) > -1 )
+            if( errMessage.indexOf && errMessage.indexOf( "No commit found for the ref" ) > -1 )
             {
                 return next( createError( "The hash " + req.params.hash + " does not exist", 404 ) );
             }

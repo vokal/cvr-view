@@ -1,0 +1,21 @@
+language: node_js
+node_js:
+  - "node"
+services:
+  - mongodb
+env:
+  global:
+    - REPO_OWNER=vokal
+    - REPO_NAME=cvr-view
+    - GITHUB_CALLBACKURL=https://cvr.vokal.io/auth/github/callback
+    - GITHUB_ORGS_WHITELIST=vokal
+    - HOST=https://cvr.vokal.io/
+    - GITHUB_CLIENTID=test
+    - GITHUB_CLIENTSECRET=test
+    - DB_CONN=mongodb://localhost
+install:
+  - npm install -g istanbul
+  - npm install
+script:
+  - chmod +x run-build.sh
+  - ./run-build.sh

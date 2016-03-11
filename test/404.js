@@ -2,23 +2,20 @@
 
 var assert = require( "assert" );
 var request = require( "supertest" );
-var app = require( "./server" );
+var app = require( "../app" );
 
 module.exports = function ()
 {
-    var server;
+    var agent;
     before( function ( done )
     {
-        app( function ( err, res )
-        {
-             server = res;
-             done( err );
-        } );
+        agent = request.agent( app );
+        done();
     } );
 
     it( "should have a 404 page", function ( done )
     {
-        request( server )
+        agent
             .get( "/this/is/not/a/page" )
             .expect( 404 )
             .end( done );

@@ -2,23 +2,20 @@
 
 var assert = require( "assert" );
 var request = require( "supertest" );
-var app = require( "./server" );
+var app = require( "../app" );
 
 module.exports = function ()
 {
-    var server;
+    var agent;
     before( function ( done )
     {
-        app( function ( err, res )
-        {
-             server = res;
-             done( err );
-        } );
+        agent = request.agent( app );
+        done();
     } );
 
     it( "should exist", function ( done )
     {
-        request( server )
+        agent
             .get( "/upload" )
             .expect( 200, done );
     } );
