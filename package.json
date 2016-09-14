@@ -25,9 +25,8 @@
     "morgan": "~1.5.1",
     "multer": "^0.1.8",
     "node-uuid": "^1.4.3",
-    "passport": "^0.2.1",
-    "passport-github": "^0.1.5",
-    "passport-oauth": "^1.0.0",
+    "passport": "^0.3.2",
+    "passport-github2": "^0.1.10",
     "request": "^2.69.0",
     "serve-favicon": "~2.2.0"
   },
