@@ -95,8 +95,8 @@
 <code>
 #!/bin/bash
 
-# Get the output folder for where the output is going to live
-COBERTURA_FILE="${TRAVIS_BUILD_DIR}/${FASTLANE_FOLDER}/${TEST_OUTPUT_FOLDER}/${TEST_COVERAGE_FILE}"
+# The location of the coverage file. Change this, depending on your Travis configuration, to point to the file.
+COBERTURA_FILE="${TRAVIS_BUILD_DIR}/cobertura.xml"
 
 if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
     # On a merge build, $TRAVIS_COMMIT is the merge commit
