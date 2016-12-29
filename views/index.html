@@ -114,7 +114,7 @@ REPO_NAME="${TRAVIS_REPO_SLUG##*/}"
 # Combine the git details into query parameters
 GIT_PARAMS="owner=${REPO_OWNER}&repo=${REPO_NAME}&commit=${LAST_COMMIT}"
 
-# Do the actual upload of PR coverage to cvr.vokal.io.
+# Upload the PR coverage to the CVR server. Update the domain in this URL as appropriate.
 curl \
     -F coverage=@"${COBERTURA_FILE}" \
     "https://cvr.vokal.io/coverage?coveragetype=cobertura&${GIT_PARAMS}"
