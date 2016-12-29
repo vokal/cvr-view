@@ -87,39 +87,37 @@
 
         <h3>Travis</h3>
 
-        <p>This script can be used to work with Travis, which doesn't make the token available on pull requests.
-        This includes getting the repo name and owner from Travis, but they can be hardcoded as well.
+        <p>This script can be used to work with Travis, passing the owner and repo instead of the token.
+        Those values could also be hardcoded.
         </p>
 
 <pre>
 <code>
 #!/bin/bash
 
-# Required Travis config:
-# - Add the repo token in the variable CVR_TOKEN as a secure property in the Travis configuration
-# - LCOV_OUTPUT below must be the file path to the coverage output
-
+# The location of the coverage file. Change this, depending on your Travis configuration, to point to the file.
+COBERTURA_FILE="${TRAVIS_BUILD_DIR}/cobertura.xml"
 
 if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
-    # Upload the non-PR coverage to cvr.vokal.io
-    curl -F coverage=@"${LCOV_OUTPUT}" \
-        "https://cvr.vokal.io/coverage?token=${CVR_TOKEN}&commit=${TRAVIS_COMMIT}&removepath=${TRAVIS_BUILD_DIR}"
-
-    # Exit successfully (so that the pull-request type uploading doesn't happen).
-    exit 0
+    # On a merge build, $TRAVIS_COMMIT is the merge commit
+    LAST_COMMIT="${TRAVIS_COMMIT}"
+else
+    # For PRs, we have to do some more fiddling to get the proper commit hash ($TRAVIS_COMMIT is the hash of a merge
+    # that Travis makes, not the hash of the last commit in the PR)
+    LAST_COMMIT="${TRAVIS_COMMIT_RANGE##*...}"
 fi
 
-# For PRs, we have to do some more fiddling to get the proper commit hash ($TRAVIS_COMMIT is the hash of a merge
-# that Travis makes, not the hash of the last commit in the PR)...
-LAST_PR_COMMIT="${TRAVIS_COMMIT_RANGE##*...}"
-# ... and we have to split the repo slug to get repo owner and name.
+# Split the repo slug to get repo owner and name.
 REPO_OWNER="${TRAVIS_REPO_SLUG%%/*}"
 REPO_NAME="${TRAVIS_REPO_SLUG##*/}"
-# Let's put those into a URL query string fragment, to make the lines in this script shorter.
-GIT_PARAMS="commit=${LAST_PR_COMMIT}&owner=${REPO_OWNER}&repo=${REPO_NAME}"
-# Do the actual upload of PR coverage to cvr.vokal.io.
-URL="https://cvr.vokal.io/coverage?${GIT_PARAMS}&removepath=${TRAVIS_BUILD_DIR}"
-curl -F coverage=@"${LCOV_OUTPUT}" "${URL}"
+
+# Combine the git details into query parameters
+GIT_PARAMS="owner=${REPO_OWNER}&repo=${REPO_NAME}&commit=${LAST_COMMIT}"
+
+# Upload the PR coverage to the CVR server. Update the domain in this URL as appropriate.
+curl \
+    -F coverage=@"${COBERTURA_FILE}" \
+    "https://cvr.vokal.io/coverage?coveragetype=cobertura&${GIT_PARAMS}"
 </code>
 </pre>
 
