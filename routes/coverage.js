@@ -132,13 +132,13 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
         };
 
         cvr.gitHub.createStatus( gitHubOauthToken, status, function ( err )
+        {
+            // another silent failure?
+            if( err )
             {
-                // another silent failure?
-                if( err )
-                {
-                    console.log( err.message );
-                }
-            } );
+                console.log( err.message );
+            }
+        } );
     };
 
     var saveCommit = function ()
@@ -273,7 +273,7 @@ var saveCoverage = function ( hash, coverage, coverageType, options, callback )
             } );
 
             github.repos.getCommits( {
-                user: repo.owner,
+                owner: repo.owner,
                 repo: repo.name,
                 sha: hash
             }, function ( err, commits )
