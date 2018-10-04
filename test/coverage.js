@@ -126,7 +126,7 @@ module.exports = function ()
     it( "should save coverage", function ( done )
     {
         nock( "https://api.github.com" )
-            .get( util.format( "/repos/vokal/cvr-view-test/commits?sha=%s&access_token=test", commit ) )
+            .get( util.format( "/repos/vokal/cvr-view-test/commits?access_token=test&sha=%s", commit ) )
             .reply( 200 )
             .get( "/repos/vokal/cvr-view-test/pulls?access_token=test" )
             .reply( 200, [ { head: { sha: commit } } ] )

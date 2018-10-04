@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node ./bin/www",
-    "test": "mocha --reporter spec",
+    "test": "mocha --reporter spec --exit",
     "testcover": "istanbul cover node_modules/mocha/bin/_mocha -- -R spec"
   },
   "dependencies": {
