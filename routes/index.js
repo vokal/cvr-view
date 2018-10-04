@@ -6,7 +6,7 @@ var mongoose = require( "mongoose" );
 var auth = require( "../lib/auth" );
 var env = require( "../lib/env" );
 var passport = require( "../lib/passport" );
-var githubApi = require( "github" );
+var githubApi = require( "@octokit/rest" );
 var github = new githubApi( {
     version: "3.0.0"
 } );

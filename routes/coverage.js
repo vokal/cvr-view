@@ -4,7 +4,7 @@ var cvr = require( "cvr" );
 var models = require( "../lib/models" );
 var env = require( "../lib/env" );
 var a = require( "async" );
-var githubApi = require( "github" );
+var githubApi = require( "@octokit/rest" );
 var github = new githubApi( {
     version: "3.0.0"
 } );
